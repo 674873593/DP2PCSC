@@ -5,14 +5,12 @@ void init_friend_name_addr()
 	friend_address_file = fopen(FRIEND_ADDRESS_FILE,"r");
 	InitQueue(&name_address, sizeof(struct friend_name_addr *), sizeof(struct friend_name_addr));
 	char line_data[LINE_LENGTH] = {0};
-	printf("!!\n\n\n!!!\n\n\n!!!\n\n");
 	while(fgets(line_data,LINE_LENGTH,friend_address_file) != NULL){
 		char *friend_name;
 		char *friend_address;
 		friend_name = strtok(line_data, "@");
 		friend_address = strtok(NULL, "\n");
 		enqueue_friend_name_addr(&name_address, friend_name, friend_address);
-		printf("[enqueue]%s %s\n",friend_name,friend_address);
 		memset(line_data, 0, sizeof(line_data));		
 	}
 	fclose(friend_address_file);
@@ -22,12 +20,14 @@ void enqueue_friend_name_addr(LinkQueue *queue, char *friend_name,char *friend_a
 {
 	struct friend_name_addr *fna;
 	fna = (struct friend_name_addr *)malloc(sizeof(struct friend_name_addr));
-	fna->friend_name = (char *)malloc(strlen(friend_name) * sizeof(char));
-	fna->friend_address = (char *)malloc(strlen(friend_address) * sizeof(char));
-	memcpy(fna->friend_name, friend_name, strlen(friend_name) * sizeof(char));
-	memcpy(fna->friend_address, friend_address, strlen(friend_address) * sizeof(char));
+	memset(fna, 0, sizeof(struct friend_name_addr));
+	fna->friend_name = (char *)malloc((strlen(friend_name) + 1) * sizeof(char));
+	fna->friend_address = (char *)malloc((strlen(friend_address) + 1) * sizeof(char));
+	memset(fna->friend_name, 0, strlen(friend_name) * sizeof(char));
+	memset(fna->friend_address, 0, strlen(friend_address) * sizeof(char));
+	strcpy(fna->friend_name, friend_name);
+	strcpy(fna->friend_address, friend_address);
 	EnQueue(queue, (void *)fna);
-	//printf("[!enqueue]%s %s\n",fna->friend_name,fna->friend_address);
 	free(fna);	
 }
 
@@ -36,7 +36,6 @@ void dequeue_friend_name_addr(LinkQueue *queue)
 	struct friend_name_addr *fna;
 	fna = (struct friend_name_addr *)malloc(sizeof(struct friend_name_addr));		
 	DeQueue(queue, (void *)fna);
-	//printf("[dequeue]%s %s\n",((struct friend_name_addr *)fna)->friend_name,((struct friend_name_addr *)fna)->friend_address);
 	free(fna->friend_name);
 	free(fna->friend_address);
 	free(fna);
@@ -52,9 +51,7 @@ void destory_friend_name_addr(LinkQueue *queue)
 int get_friend_address(LinkQueue *name_address_queue, char *friend_name, char *friend_ip)
 {
 	QNode *p = name_address_queue->front;
-	
 	while((p = p->next)){
-		
 		printf("[get_friend_address]%s %s\n",((struct friend_name_addr *)p->pointer)->friend_name,((struct friend_name_addr *)p->pointer)->friend_address);
 		if (!strcmp(friend_name, ((struct friend_name_addr *)p->pointer)->friend_name)) {
 			strcpy(friend_ip, ((struct friend_name_addr *)p->pointer)->friend_address);
