@@ -23,8 +23,9 @@ void init_show()
 	pthread_mutex_init(&lock,NULL);
 	system("gnome-terminal -t \"Chatting\" -x bash -c \"bash show_tty_daemon.sh show\"");
 	refresh_show_tty();
-	show_thread_id = (pthread_t *)malloc(sizeof(pthread_t));
-	pthread_create(show_thread_id, NULL, show_thread, 0);
+	//show_thread_id = (pthread_t *)malloc(sizeof(pthread_t));
+	pthread_t show_thread_id;
+	pthread_create(&show_thread_id, NULL, show_thread, 0);
 	//pthread_detach(*show_thread_id);
 }
 
