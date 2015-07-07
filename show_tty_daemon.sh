@@ -8,13 +8,15 @@ function isalive(){
 	if [ ${#pid} -ne 0 ] ; then
 		if [ ${pidNum} -gt 1 ] ; then
 			killsame
+			#gnome-terminal -t "Chatting" -x bash -c "bash ${currentpath}/show_tty_daemon.sh show"
 			bash ${currentpath}/show_tty_daemon.sh show
-			exit 1
+			return 1
 		elif [ ${pidNum} -eq 0 ]; then
-			bash ${currentpath}/show_tty_daemon.sh show	
-			exit 1
-		else ;then
-			exit 0
+			#gnome-terminal -t "Chatting" -x bash -c "bash ${currentpath}/show_tty_daemon.sh show"
+			bash ${currentpath}/show_tty_daemon.sh show
+			return 1
+		elif [ ${pidNum} -eq 1 ];then
+			return 0
 		fi
 	fi
 }
@@ -33,12 +35,7 @@ function killsame(){
 }
 
 function show(){
-	echo -ne '\033[?25l';
-	echo $$>show_tty_name.txt;
-	tty>>show_tty_name.txt;
-	while true;do
-		read -s;
-	done
+	gnome-terminal -t "Chatting" -x bash -c "echo -ne '\033[?25l';echo \"$$\">show_tty_name.txt;tty>>show_tty_name.txt;while true;do read -s;done"
 }
 
 

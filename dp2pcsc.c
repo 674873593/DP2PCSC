@@ -9,14 +9,19 @@ int main (int argc, char *argv[])
 	init_connector();
 	init_socket();
 	init_show();
-	sleep(1);
-	client_shutdown = 1;
-	sleep(3);
+	//sleep(1);
+	//client_shutdown = 1;
+	
 	while(!client_shutdown){
 		input();
 	}
+	shutdown(listen_socket_fd, SHUT_RDWR);
+	close(listen_socket_fd);
+	//sleep(3);
 	return 0;
 }//end main-function
+
+
 
 void init_socket()
 {
@@ -34,6 +39,8 @@ void init_socket()
 	pthread_create(&listen_thread_id, NULL, listen_thread, 0);//begin listen thread
 
 }
+
+
 
 int input(){
 	int input_bufsize = INPUT_BUFSIZE;
@@ -63,6 +70,7 @@ void send_message(char *friend_name,char *message){
 	printf("findresult  %d \n",result);
 	if (result != 0) {//make new connect & add connectors
 		socket_fd friend_socket_fd;
+		memset(&friend_socket_fd, 0, sizeof(socket_fd));
 		friend_socket_fd = socket(PF_INET, SOCK_STREAM, 0);//PF_INET->TCP/IP Protocol Family,SOCK_STREAM->TCP
 		struct sockaddr_in dest_addr;
 		char *friend_ip;

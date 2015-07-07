@@ -10,7 +10,7 @@ void *listen_thread(void *arg)
 		talk_socket_fd = accept(listen_socket_fd,
 						(struct sockaddr *)&client_addr_in,
 						&client_addr_in_len);
-		if (talk_socket_fd == 0) {
+		if (talk_socket_fd > 2) {
 			pthread_t talk_thread_id;
 			pthread_create(&talk_thread_id, NULL, talk_thread, 0);
 			//pthread_detach(talk_thread_id);
@@ -20,7 +20,10 @@ void *listen_thread(void *arg)
 	}
 	
 	//free(listen_thread_id);
-	close(listen_socket_fd);
+	
 	pthread_exit((void *)NULL);
 	//return (void *)NULL;
 }
+
+
+
