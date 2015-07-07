@@ -24,14 +24,14 @@
 	
 	
 	extern socket_fd listen_socket_fd;
-	extern pthread_t *listen_thread_id;
+	extern Queue name_address;
+	//extern pthread_t *listen_thread_id;
 	
 	int client_shutdown;
 	
 	void init_socket();
 	int input();
 	void send_message(char *friend_name, char *message);
-	void get_friend_address(char *friend_name, char *friend_ip);
 	
 #endif /* __client_H__ */ 
 	

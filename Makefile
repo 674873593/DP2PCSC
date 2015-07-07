@@ -10,7 +10,10 @@ CFLAGS		=-std=gnu11 -g -lpthread  -Wall
 terminal-run:$(PRONAME)
 	gnome-terminal --hide-menubar --working-directory=$(PWD) -t "$(PRONAME)" -x bash -c "./$(PRONAME);"
 
-
+count-code:
+	echo "c file"|find ./ -name '*.h' |xargs wc -l
+	echo "h file"|find ./ -name '*.c' |xargs wc -l
+	echo "sh file"|find ./ -name '*.sh' |xargs wc -l
 
 ### .elf
 $(PRONAME):$(OBJECTS)

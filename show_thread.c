@@ -1,6 +1,6 @@
 #include "show_thread.h"
 static pthread_mutex_t lock;
-static pthread_t *show_thread_id;
+//static pthread_t *show_thread_id;
 
 void show(char *friend_name, char *message)
 {
@@ -21,10 +21,11 @@ void init_show()
 	show_tty_running = (struct show_tty*)malloc(sizeof(struct show_tty));
 	show_tty_running->show_tty_name = (char *)malloc(SHOW_TTY_NAME_BUFSIZE);
 	pthread_mutex_init(&lock,NULL);
-	system("gnome-terminal -t \"Chatting\" -x bash -c \"bash show_tty_daemon.sh show\"");
+	system("bash show_tty_daemon.sh show");
 	refresh_show_tty();
-	show_thread_id = (pthread_t *)malloc(sizeof(pthread_t));
-	pthread_create(show_thread_id, NULL, show_thread, 0);
+	//show_thread_id = (pthread_t *)malloc(sizeof(pthread_t));
+	pthread_t show_thread_id;
+	pthread_create(&show_thread_id, NULL, show_thread, 0);
 	//pthread_detach(*show_thread_id);
 }
 
@@ -67,7 +68,7 @@ void *show_thread(void *arg)
 	pthread_detach(pthread_self());
 	while(!client_shutdown){
 		int isalive;
-		isalive = system("gnome-terminal -t \"Chatting\" -x bash -c \"bash show_tty_daemon.sh isalive\"");
+		isalive = system("bash show_tty_daemon.sh isalive");
 		if (!isalive) {
 			refresh_show_tty();
 		}
@@ -75,7 +76,7 @@ void *show_thread(void *arg)
 	}
 	free(show_tty_running->show_tty_name);
 	free(show_tty_running);
-	free(show_thread_id);
+	//free(show_thread_id);
 	pthread_mutex_destroy(&lock);
 	//pthread_detach(pthread_self());
 	pthread_exit((void *)NULL);

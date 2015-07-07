@@ -6,17 +6,26 @@ static char inputbuf[INPUT_BUFSIZE];
 int main (int argc, char *argv[])
 {
 	client_shutdown = 0;
+	init_friend_name_addr();//must be init first,load friend name reflects to address from file
 	init_connector();
 	init_socket();
 	init_show();
-/*	sleep(1);*/
-/*	client_shutdown = 1;*/
-/*	sleep(3);*/
+/*	print_name_addr(&name_address);*/
+	sleep(1);
+	client_shutdown = 1;
+	
 	while(!client_shutdown){
 		input();
 	}
+	shutdown(listen_socket_fd, SHUT_RDWR);
+	close(listen_socket_fd);
+	destory_friend_name_addr(&name_address);
+	
+	sleep(3);
 	return 0;
 }//end main-function
+
+
 
 void init_socket()
 {
@@ -29,11 +38,13 @@ void init_socket()
 	listen_addr_in.sin_port = htons(SERVER_PORT);
 	bind(listen_socket_fd,(struct sockaddr *)&listen_addr_in,sizeof(listen_addr_in));
 	listen(listen_socket_fd,LISTEN_LIST_LENGTH);//set listen list length,begin listen
-	listen_thread_id = (pthread_t *)malloc(sizeof(pthread_t));
-	
-	pthread_create(listen_thread_id, NULL, listen_thread, 0);//begin listen thread
+	//listen_thread_id = (pthread_t *)malloc(sizeof(pthread_t));
+	pthread_t listen_thread_id;
+	pthread_create(&listen_thread_id, NULL, listen_thread, 0);//begin listen thread
 
 }
+
+
 
 int input(){
 	int input_bufsize = INPUT_BUFSIZE;
@@ -59,24 +70,26 @@ int input(){
 
 void send_message(char *friend_name,char *message){
 	struct friend *this = (struct friend *)malloc(sizeof(struct friend));
-	int result = find_connector_by_name(&connectors, friend_name, this);
+	int result = find_connector_by_name(&connectors, friend_name, this);//is connectted?
 	printf("findresult  %d \n",result);
 	if (result != 0) {//make new connect & add connectors
 		socket_fd friend_socket_fd;
+		memset(&friend_socket_fd, 0, sizeof(socket_fd));
 		friend_socket_fd = socket(PF_INET, SOCK_STREAM, 0);//PF_INET->TCP/IP Protocol Family,SOCK_STREAM->TCP
 		struct sockaddr_in dest_addr;
-		char *friend_ip;
-		get_friend_address(friend_name, friend_ip);
+		char friend_ip[16] = {0};
+		get_friend_address(&name_address , friend_name, (char *)&friend_ip);
 		dest_addr.sin_family = AF_INET;//AF_INET->TCP/IP Address Family
 		//dest_addr.sin_port = htons(DEST_PORT);
-		dest_addr.sin_addr.s_addr = inet_addr(friend_ip);
+		dest_addr.sin_addr.s_addr = inet_addr((char *)&friend_ip);
 		memset(&(dest_addr.sin_zero), 0, sizeof(dest_addr.sin_zero));
-		free(friend_ip);
+		
 		int result;
 		
 		result = connect(friend_socket_fd, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr));
 		printf("result %d",result);
-		if (result) 
+		if (result == -1) //connect failed
+			free(this);
 			return;
 		
 		
@@ -91,12 +104,12 @@ void send_message(char *friend_name,char *message){
 		this->state = TALK_RUNNING;
 		
 		add_connector(&connectors, this);
-		free(this);
+		
 	}
 	
 	
 	int input_length = strlen(inputbuf);
-
+	//send_message & show in local tty
 	for (int i = 0; i < input_length / SEND_BUFSIZE; i += 1) {
 		char *sendbuf = (char *)malloc(SEND_BUFSIZE * sizeof(char));
 		memset(sendbuf, 0, SEND_BUFSIZE * sizeof(char));
@@ -108,12 +121,8 @@ void send_message(char *friend_name,char *message){
 		
 	
 	memset(inputbuf,0,input_length);
-
+	free(this);
 }
 
 
-void get_friend_address(char *friend_name, char *friend_ip)
-{
-	friend_ip = (char *)malloc(SEND_BUFSIZE * sizeof(char));
-	strcpy(friend_ip,"172.0.0.1");		
-}
+
