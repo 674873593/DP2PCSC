@@ -9,9 +9,9 @@ int main (int argc, char *argv[])
 	init_connector();
 	init_socket();
 	init_show();
-/*	sleep(1);*/
-/*	client_shutdown = 1;*/
-/*	sleep(3);*/
+	sleep(1);
+	client_shutdown = 1;
+	sleep(3);
 	while(!client_shutdown){
 		input();
 	}
