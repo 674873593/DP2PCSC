@@ -19,7 +19,7 @@ void *listen_thread(void *arg)
 		}
 	}
 	
-	free(listen_thread_id);
+	//free(listen_thread_id);
 	close(listen_socket_fd);
 	pthread_exit((void *)NULL);
 	//return (void *)NULL;

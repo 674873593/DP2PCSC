@@ -1,6 +1,6 @@
 #include "show_thread.h"
 static pthread_mutex_t lock;
-static pthread_t *show_thread_id;
+//static pthread_t *show_thread_id;
 
 void show(char *friend_name, char *message)
 {
@@ -76,7 +76,7 @@ void *show_thread(void *arg)
 	}
 	free(show_tty_running->show_tty_name);
 	free(show_tty_running);
-	free(show_thread_id);
+	//free(show_thread_id);
 	pthread_mutex_destroy(&lock);
 	//pthread_detach(pthread_self());
 	pthread_exit((void *)NULL);

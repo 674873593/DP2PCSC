@@ -29,9 +29,9 @@ void init_socket()
 	listen_addr_in.sin_port = htons(SERVER_PORT);
 	bind(listen_socket_fd,(struct sockaddr *)&listen_addr_in,sizeof(listen_addr_in));
 	listen(listen_socket_fd,LISTEN_LIST_LENGTH);//set listen list length,begin listen
-	listen_thread_id = (pthread_t *)malloc(sizeof(pthread_t));
-	
-	pthread_create(listen_thread_id, NULL, listen_thread, 0);//begin listen thread
+	//listen_thread_id = (pthread_t *)malloc(sizeof(pthread_t));
+	pthread_t listen_thread_id;
+	pthread_create(&listen_thread_id, NULL, listen_thread, 0);//begin listen thread
 
 }
 

@@ -24,7 +24,7 @@
 	
 	
 	extern socket_fd listen_socket_fd;
-	extern pthread_t *listen_thread_id;
+	//extern pthread_t *listen_thread_id;
 	
 	int client_shutdown;
 	
