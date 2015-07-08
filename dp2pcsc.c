@@ -60,14 +60,14 @@ int input(){
 	friend_name = result;
 	result = strtok(NULL, "\n");
 	message = result;
-	printf("[TEST EXIT] name %s message %s \n",friend_name, message);
+	//printf("[TEST EXIT] name %s message %s \n",friend_name, message);
 	if (friend_name != NULL && message != NULL) {
-		printf("[TEST] %s \n", result);
-		printf("[TEST] message %s \n", result);		
-		send_message(friend_name, message);
+	//	printf("[TEST] %s \n", result);
+	//	printf("[TEST] message %s \n", result);		
+		send_message(friend_name, message);//EOF 0x04
 		return TRUE;
 	}
-	printf("[TEST path] %p \n", friend_name);
+	//printf("[TEST path] %p \n", friend_name);
 		
 	if (!strcmp(friend_name, "exit\n")){
 		client_shutdown = 1;
@@ -84,6 +84,7 @@ void send_message(char *friend_name,char *message){
 	struct friend *this = (struct friend *)malloc(sizeof(struct friend));
 	memset(this, 0, sizeof(struct friend));
 	int result = find_connector_by_name(&connectors, friend_name, this);//is connectted?
+	print_connector(&connectors);
 	printf("findresult  %d \n", result);
 	if (result) {//make new connect & create talk_thread
 		socket_fd friend_socket_fd;
@@ -93,7 +94,7 @@ void send_message(char *friend_name,char *message){
 		char friend_ip[16] = {0};
 		int gfa_result;
 		gfa_result = get_friend_address(&name_address , friend_name, (char *)&friend_ip);
-		
+		printf("[get_address result]%s\n",friend_ip);
 		if (gfa_result) {
 			goto end;
 		}
@@ -104,9 +105,9 @@ void send_message(char *friend_name,char *message){
 		memset(&(dest_addr.sin_zero), 0, sizeof(dest_addr.sin_zero));
 		
 		int result;
-		
+		printf("new connect\n\n\n\n!!!!!\n\n\n\n!!!!\n\n\n");	
 		result = connect(friend_socket_fd, (struct sockaddr *)&dest_addr, sizeof(struct sockaddr));
-		printf("result %d",result);
+		printf("[connect result] %d\n",result);
 		if (result == -1) {//connect failed	
 			goto end;
 		}
@@ -124,7 +125,7 @@ void send_message(char *friend_name,char *message){
 /*			memset(this->friend_name, 0, (strlen(friend_name) + 1) * sizeof(char));*/
 /*			memcpy(friend_name, this->friend_name, strlen(friend_name));*/
 /*			this->friend_thread_id = talk_thread_id;*/
-/*			this->friend_socket_fd = friend_socket_fd;*/
+		this->friend_socket_fd = friend_socket_fd;
 /*			this->state = TALK_RUNNING;*/
 /*			enqueue_connector(&connectors, this->friend_name, this->friend_thread_id, this->friend_socket_fd);*/
 /*			free(this->friend_name);*/
@@ -134,22 +135,37 @@ void send_message(char *friend_name,char *message){
 /*		this->friend_socket_fd = get_connector_socket_fd_by_name(&connectors, friend_name);*/
 /*		printf("已经链接\n");//TODO send to socket_fd which in connectors by get_connector_socket_fd*/
 /*	}*/
+	int message_length = strlen(message);
+	int wrap_message_length = message_length + 2;
 	
-	
-	int input_length = strlen(inputbuf);
+	char *wrap_message = (char *)malloc(wrap_message_length * sizeof(char));
+	memset(wrap_message, 0, wrap_message_length * sizeof(char));
+	strncpy(wrap_message, message, message_length);
+	strncpy((wrap_message + message_length), "\x4", 1);
+	printf("[wrap]%s\n",wrap_message);
+	printf("[message]%s\n",message);
+	//int input_length = strlen(message);
 	//send_message & show in local tty
-	for (int i = 0; i < input_length / SEND_BUFSIZE; i += 1) {
-		char *sendbuf = (char *)malloc(SEND_BUFSIZE * sizeof(char));
-		memset(sendbuf, 0, SEND_BUFSIZE * sizeof(char));
+	printf("[begin send]\n");
+	printf("[INPUTSIZE]%d",strlen(wrap_message));
+	printf("[this->fd]%d\n",this->friend_socket_fd);
+	int send_result;
+	
+	
+	for (int i = 0; i <= wrap_message_length / SEND_BUFSIZE; i += 1) {
+		char *sendbuf = (char *)malloc((SEND_BUFSIZE + 1) * sizeof(char));
+		memset(sendbuf, 0, (SEND_BUFSIZE + 1) * sizeof(char));
 		//TODO split string to sendbuf
-		send(this->friend_socket_fd, sendbuf, strlen(sendbuf), 0);
+		strncpy(sendbuf, wrap_message + i * SEND_BUFSIZE, SEND_BUFSIZE);
+		send_result = send(this->friend_socket_fd, sendbuf, strlen(sendbuf), 0);
 		free(sendbuf);
 	}
-	
+	printf("[send result]%d\n",send_result);
 	show(friend_name, message, SHOW_DIRECTION_OUT);
 	
 	end:
 	free(this);
+	free(wrap_message);
 }
 
 

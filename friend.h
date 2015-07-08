@@ -41,7 +41,7 @@
 	int find_connector_by_threadid(LinkQueue *friend_queue, pthread_t friend_thread_id, struct friend *friend_val);
 	int remove_connector(LinkQueue *friend_queue, char *friend_name);
 	void destory_connector(LinkQueue *friend_queue);
-	
+	void print_connector(LinkQueue *queue);
 	//int get_friend_addr(char *friend_name,char *friend_ip);
 #endif /* __friend_H__ */ 
 

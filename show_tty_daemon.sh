@@ -10,15 +10,12 @@ function isalive(){
 		killsame
 		#gnome-terminal -t "Chatting" -x bash -c "bash ${currentpath}/show_tty_daemon.sh show"
 		bash ${currentpath}/show_tty_daemon.sh show
-		echo 1
 		return 1
 	elif [ ${pidNum} -eq 0 ]; then
 		#gnome-terminal -t "Chatting" -x bash -c "bash ${currentpath}/show_tty_daemon.sh show"
 		bash ${currentpath}/show_tty_daemon.sh show
-		echo 1
 		return 1
 	elif [ ${pidNum} -eq 1 ];then
-		echo 0
 		return 0
 	fi
 }

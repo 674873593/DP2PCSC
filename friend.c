@@ -150,6 +150,7 @@ int find_connector_by_name(LinkQueue *friend_queue, char *friend_name, struct fr
 	QNode *p = friend_queue->front;
 	while((p = p->next)){
 		if (!strcmp(friend_name, ((struct friend *)p->pointer)->friend_name)) {
+			memcpy(friend_find, p->pointer, sizeof(struct friend));
 			return OK;
 		}
 	}
@@ -170,7 +171,8 @@ int find_connector_by_threadid(LinkQueue *friend_queue, pthread_t friend_thread_
 
 
 int remove_connector(LinkQueue *friend_queue, char *friend_name)
-{
+{// TODO this function doesn't work well
+	print_connector(friend_queue);
 	QNode *p = friend_queue->front;
 	QNode *before = p;
 	while((p = p->next)){
@@ -183,6 +185,7 @@ int remove_connector(LinkQueue *friend_queue, char *friend_name)
 		}
 		before = p;
 	}
+	print_connector(friend_queue);
 	return ERROR;
 }
 
@@ -191,4 +194,17 @@ void destory_connector(LinkQueue *friend_queue)
 	while(QueueLength(friend_queue) != 0){
 		dequeue_connector(friend_queue);
 	}
+}
+
+void print_connector(LinkQueue *queue)
+{
+	QNode *p = queue->front;
+	
+	//printf("[PTR]%p\n",p);
+	printf("[print connectors]\n");
+	while((p = p->next)){
+		
+		printf("[elements]%s     sockfd = %d\n",((struct friend *)p->pointer)->friend_name,((struct friend *)p->pointer)->friend_socket_fd);
+	}
+	printf("[print connectors end]\n");
 }
