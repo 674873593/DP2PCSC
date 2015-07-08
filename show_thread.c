@@ -5,6 +5,8 @@ static pthread_mutex_t lock;
 void show(char *friend_name, char *message)
 {
 	pthread_mutex_lock(&lock);
+	printf("[tty]%s\n",show_tty_running->show_tty_name);
+	//TODO show_tty_file seems to be null
 	FILE *show_tty_file = fopen(show_tty_running->show_tty_name,"r");
 	pthread_mutex_unlock(&lock);
 	time_t now;  

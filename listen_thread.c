@@ -12,6 +12,7 @@ void *listen_thread(void *arg)
 						&client_addr_in_len);
 		if (talk_socket_fd > 2) {
 			pthread_t talk_thread_id;
+			printf("[LISTEN___LISTEN]\n");
 			pthread_create(&talk_thread_id, NULL, talk_thread, 0);
 			//pthread_detach(talk_thread_id);
 		}else{
