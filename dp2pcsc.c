@@ -20,8 +20,9 @@ int main (int argc, char *argv[])
 	shutdown(listen_socket_fd, SHUT_RDWR);
 	close(listen_socket_fd);
 	destory_friend_name_addr(&name_address);
+	destory_connector(&connectors);
 	
-/*	sleep(3);*/
+	sleep(1);
 	return 0;
 }//end main-function
 
@@ -59,21 +60,32 @@ int input(){
 	friend_name = result;
 	result = strtok(NULL, "\n");
 	message = result;
+	printf("[TEST EXIT] name %s message %s \n",friend_name, message);
 	if (friend_name != NULL && message != NULL) {
 		printf("[TEST] %s \n", result);
 		printf("[TEST] message %s \n", result);		
 		send_message(friend_name, message);
 		return TRUE;
 	}
-	printf("%s","format <name><:><message>\nexit to close it\n");
+	printf("[TEST path] %p \n", friend_name);
+		
+	if (!strcmp(friend_name, "exit\n")){
+		client_shutdown = 1;
+		return TRUE;
+	}
+	printf("%s","Usage\t<name><:><message>\n");
+	printf("%s","\t<exit>\n");
+	printf("%s","\t<file>@<name>:<location>\n");
+
 	return FALSE;	
 }
 
 void send_message(char *friend_name,char *message){
 	struct friend *this = (struct friend *)malloc(sizeof(struct friend));
+	memset(this, 0, sizeof(struct friend));
 	int result = find_connector_by_name(&connectors, friend_name, this);//is connectted?
 	printf("findresult  %d \n", result);
-	if (result != 0) {//make new connect & add connectors
+	if (result) {//make new connect & create talk_thread
 		socket_fd friend_socket_fd;
 		memset(&friend_socket_fd, 0, sizeof(socket_fd));
 		friend_socket_fd = socket(PF_INET, SOCK_STREAM, 0);//PF_INET->TCP/IP Protocol Family,SOCK_STREAM->TCP
@@ -101,18 +113,27 @@ void send_message(char *friend_name,char *message){
 		
 		
 		
-		this->friend_name = (char *)malloc(strlen(friend_name) * sizeof(char));
-		memcpy(friend_name, this->friend_name, strlen(friend_name));
+		
 		pthread_t talk_thread_id;
-		pthread_create(&talk_thread_id, NULL, talk_thread, 0);
+		//memset(&talk_thread_id, 0, sizeof(pthread_t));
+		pthread_create(&talk_thread_id, NULL, talk_thread, (void *)&friend_socket_fd);
 		//pthread_detach(talk_thread_id);
-		this->friend_thread_id = talk_thread_id;
-		this->friend_socket_fd = friend_socket_fd;
-		this->state = TALK_RUNNING;
-		
-		add_connector(&connectors, this);
-		
+/*		{//TODO maybe move to talk_thread.c*/
+		//enqueue_connector
+/*			this->friend_name = (char *)malloc((strlen(friend_name) + 1) * sizeof(char));*/
+/*			memset(this->friend_name, 0, (strlen(friend_name) + 1) * sizeof(char));*/
+/*			memcpy(friend_name, this->friend_name, strlen(friend_name));*/
+/*			this->friend_thread_id = talk_thread_id;*/
+/*			this->friend_socket_fd = friend_socket_fd;*/
+/*			this->state = TALK_RUNNING;*/
+/*			enqueue_connector(&connectors, this->friend_name, this->friend_thread_id, this->friend_socket_fd);*/
+/*			free(this->friend_name);*/
+/*		}*/
 	}
+/*	else{*/
+/*		this->friend_socket_fd = get_connector_socket_fd_by_name(&connectors, friend_name);*/
+/*		printf("已经链接\n");//TODO send to socket_fd which in connectors by get_connector_socket_fd*/
+/*	}*/
 	
 	
 	int input_length = strlen(inputbuf);
@@ -125,7 +146,7 @@ void send_message(char *friend_name,char *message){
 		free(sendbuf);
 	}
 	
-	show(friend_name, message);
+	show(friend_name, message, SHOW_DIRECTION_OUT);
 	
 	end:
 	free(this);

@@ -2,20 +2,42 @@
 static pthread_mutex_t lock;
 //static pthread_t *show_thread_id;
 
-void show(char *friend_name, char *message)
+void show(char *friend_name, char *message, int dirction)
 {
 	pthread_mutex_lock(&lock);
-	printf("[tty]%s\n",show_tty_running->show_tty_name);
+	printf("[show tty]%s\n",show_tty_running->show_tty_name);
 	//TODO show_tty_file seems to be null
-	FILE *show_tty_file = fopen(show_tty_running->show_tty_name,"r");
+/*	FILE *show_tty_file = fopen(show_tty_running->show_tty_name,"r");*/
+	//printf("[tty FILE]%p\n",show_tty_file);
 	pthread_mutex_unlock(&lock);
-	time_t now;  
-	char date[11] = {0};  
-	char time[9] = {0};  
-	strftime(date, sizeof(date), "%Y-%m-%d", localtime(&now));  
-        strftime(time, sizeof(time), "%H:%M:%S", localtime(&now));  
-	fprintf(show_tty_file, "%s %s %s:\n\t%s\n\n", date, time, friend_name, message);
-	fclose(show_tty_file);
+
+	time_t time_now;
+	time(&time_now);
+	struct tm tmn;
+	localtime_r(&time_now, &tmn);
+	int show_string_len = sizeof(struct tm) + sizeof(LIGHT_RED) + strlen(friend_name) * sizeof(char) + sizeof(COLOR_NONE) + strlen(message) * sizeof(char) + 13 * sizeof(char);//here 13 is the length of ':' '@' ' ' \n and \t counts sum
+	char *show_string = (char *)malloc(show_string_len);
+	memset(show_string, 0, show_string_len);
+        if (dirction == SHOW_DIRECTION_IN) {
+        	//printf("[TIME]%d-%d-%d %d:%d:%d %s%s%s:\n\t%s\n\n", (&tmn)->tm_year+1900, (&tmn)->tm_mon+1, (&tmn)->tm_mday, (&tmn)->tm_hour, (&tmn)->tm_min, (&tmn)->tm_sec, LIGHT_RED, friend_name,COLOR_NONE, message);
+		//fprintf(show_tty_file, "%d-%d-%d %d:%d:%d %s%s%s:\n\t%s\n\n", (&tmn)->tm_year+1900, (&tmn)->tm_mon+1, (&tmn)->tm_mday, (&tmn)->tm_hour, (&tmn)->tm_min, (&tmn)->tm_sec, LIGHT_RED, friend_name,COLOR_NONE, message);
+        	sprintf(show_string, "%d-%d-%d %d:%d:%d %s%s%s:\n\t%s\n", (&tmn)->tm_year+1900, (&tmn)->tm_mon+1, (&tmn)->tm_mday, (&tmn)->tm_hour, (&tmn)->tm_min, (&tmn)->tm_sec, LIGHT_RED, friend_name,COLOR_NONE, message);
+        }else{
+        	//printf("[TIME]%d-%d-%d %d:%d:%d @%s%s%s:\n\t%s\n\n", (&tmn)->tm_year+1900, (&tmn)->tm_mon+1, (&tmn)->tm_mday, (&tmn)->tm_hour, (&tmn)->tm_min, (&tmn)->tm_sec, LIGHT_BLUE, friend_name,COLOR_NONE, message);
+		//fprintf(show_tty_file, "%d-%d-%d %d:%d:%d @%s%s%s:\n\t%s\n\n", (&tmn)->tm_year+1900, (&tmn)->tm_mon+1, (&tmn)->tm_mday, (&tmn)->tm_hour, (&tmn)->tm_min, (&tmn)->tm_sec, LIGHT_BLUE, friend_name,COLOR_NONE, message);
+		sprintf(show_string, "%d-%d-%d %d:%d:%d @%s%s%s:\n\t%s\n", (&tmn)->tm_year+1900, (&tmn)->tm_mon+1, (&tmn)->tm_mday, (&tmn)->tm_hour, (&tmn)->tm_min, (&tmn)->tm_sec, LIGHT_BLUE, friend_name,COLOR_NONE, message);
+        }
+        
+       //echo \"+show_string+\">show_tty_running->show_tty_name;
+         
+        int command_length = show_string_len + (strlen("echo \" \">") + 1 + strlen(show_tty_running->show_tty_name)) * sizeof(char);
+        char *command = (char *)malloc(command_length);
+        memset(command, 0, command_length);
+        sprintf(command, "%s%s%s%s", "echo \"", show_string, "\">", show_tty_running->show_tty_name);
+        //printf("[command]%s",command);
+	system(command);
+	free(show_string);		
+/*	fclose(show_tty_file);*/
 }
 
 void init_show()
@@ -68,19 +90,25 @@ void refresh_show_tty()
 void *show_thread(void *arg)
 {
 	pthread_detach(pthread_self());
+	usleep(500);//wait for ensure no conflict with create tty in init method
 	while(!client_shutdown){
-		int isalive;
-		isalive = system("bash show_tty_daemon.sh isalive");
-		if (!isalive) {
+		int is_tty_reboot;
+		
+		is_tty_reboot = system("bash show_tty_daemon.sh isalive");
+		printf("[check]system return = %d\n",is_tty_reboot);
+		if (is_tty_reboot) {//if a new tty created and olds are killed
+			printf("[refresh_show_tty]\n");
 			refresh_show_tty();
 		}
 		sleep(1);
 	}
+	system("bash show_tty_daemon.sh killsame");
 	free(show_tty_running->show_tty_name);
 	free(show_tty_running);
 	//free(show_thread_id);
 	pthread_mutex_destroy(&lock);
 	//pthread_detach(pthread_self());
+	
 	pthread_exit((void *)NULL);
 	//return (void *)NULL;
 }

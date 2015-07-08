@@ -25,6 +25,7 @@
 	
 	extern socket_fd listen_socket_fd;
 	extern Queue name_address;
+	extern Queue connectors;
 	//extern pthread_t *listen_thread_id;
 	
 	int client_shutdown;

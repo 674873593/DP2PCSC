@@ -10,12 +10,14 @@
 	
 	#include "client.h"
 	
-	#define NONE "\033[m"
+	#define COLOR_NONE "\033[m"
 	#define LIGHT_RED "\033[1;31m"
 	#define LIGHT_BLUE "\033[1;34m" 
 	
 	#define SHOW_TTY_FILE "show_tty_name.txt"
 	#define SHOW_TTY_NAME_BUFSIZE 50
+	#define SHOW_DIRECTION_IN 0
+	#define SHOW_DIRECTION_OUT 1
 	extern int client_shutdown;
 	
 	struct show_tty{
@@ -24,7 +26,7 @@
 	};
 	struct show_tty *show_tty_running;
 	
-	void show(char *friend_name, char *message);
+	void show(char *friend_name, char *message, int dirction);
 	void init_show();
 	void *show_thread(void *arg);
 	void refresh_show_tty();

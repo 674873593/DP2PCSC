@@ -13,7 +13,9 @@
 	#define TALK_RUNNING 0
 	#define TALK_SHUTDOWN 1 
 	
-	extern Queue friend_queue;
+	extern Queue name_address;
+	extern int client_shutdown;
+	extern Queue connectors;
 	
 	void *talk_thread(void *arg);
 	

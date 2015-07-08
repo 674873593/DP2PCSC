@@ -2,6 +2,7 @@
 
 int InitQueue(LinkQueue *Q,size_t ptr_size,size_t value_size){
 	Q->front = Q->rear =(QueuePtr)malloc(sizeof(QNode));
+	memset(Q->rear, 0, sizeof(QNode));
 	if(!Q->front)return ERROR;
 	Q->ptr_size=ptr_size;
 	Q->value_size=value_size;
@@ -12,8 +13,10 @@ int InitQueue(LinkQueue *Q,size_t ptr_size,size_t value_size){
 int EnQueue(LinkQueue *Q,void *pointer){
 	QNode *p;
 	p=(QueuePtr)malloc(sizeof(QNode));//malloc由编译器分配空间的间隔会自动大于等于20!!
+	memset(p, 0, sizeof(QNode));
 	if(!p)return ERROR;
 	p->pointer=(void*)malloc(Q->value_size);//TODO 新增代码未测试
+	memset(p->pointer, 0, Q->value_size);
 	if(!p->pointer)return ERROR;//TODO 新增代码未测试
 	memcpy(p->pointer,pointer,Q->value_size);//p->pointer=pointer;
 	p->next=NULL;
