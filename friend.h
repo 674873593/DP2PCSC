@@ -10,11 +10,15 @@
 	#define FRIEND_ADDRESS_FILE "friend_address"
 	#define LINE_LENGTH 100
 	
+	
+	#define TALK_RUNNING 0
+	#define TALK_SHUTDOWN 1 
+	
 	struct friend{
 		char *friend_name;
 		pthread_t friend_thread_id;
 		socket_fd friend_socket_fd;
-		int state;};
+		int state;};//TALK_RUNNING TALK_SHUTDOWN
 	
 	Queue connectors;
 	

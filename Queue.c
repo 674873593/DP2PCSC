@@ -1,7 +1,7 @@
 #include "Queue.h"
 
 int InitQueue(LinkQueue *Q,size_t ptr_size,size_t value_size){
-	Q->front = Q->rear =(QueuePtr)malloc(sizeof(QNode));
+	Q->front = Q->rear = (QueuePtr)malloc(sizeof(QNode));
 	memset(Q->rear, 0, sizeof(QNode));
 	
 	Q->front->pointer = (void*)malloc(value_size);

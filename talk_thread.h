@@ -10,14 +10,12 @@
 	#include "socket.h"
 	#include "show_thread.h"
 	
-	#define TALK_RUNNING 0
-	#define TALK_SHUTDOWN 1 
 	
 	extern Queue name_address;
 	extern int client_shutdown;
 	extern Queue connectors;
 	
 	void *talk_thread(void *arg);
-	
+	void recombine_message(LinkQueue *recv_queue,char *message);
 #endif /* __talk_thread_H__ */ 
 

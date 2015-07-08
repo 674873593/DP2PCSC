@@ -49,6 +49,7 @@ void destory_friend_name_addr(LinkQueue *queue)
 	while(QueueLength(queue) != 0){
 		dequeue_friend_name_addr(queue);
 	}
+	DestoryQueue(queue);
 }
 
 int get_friend_address(LinkQueue *name_address_queue, char *friend_name, char *friend_ip)
@@ -176,8 +177,11 @@ int remove_connector(LinkQueue *friend_queue, char *friend_name)
 	QNode *p = friend_queue->front;
 	QNode *before = p;
 	while((p = p->next)){
-		if (strcmp(friend_name, ((struct friend *)p->pointer)->friend_name)) {
+		printf("[\telement]%s\n",((struct friend *)p->pointer)->friend_name);
+		printf("[\telement cmp]%d\n",strcmp(friend_name, ((struct friend *)p->pointer)->friend_name));
+		if (!strcmp(friend_name, ((struct friend *)p->pointer)->friend_name)) {
 			before->next = p->next;
+			printf("[element for remove]%s\n",((struct friend *)p->pointer)->friend_name);
 			free(((struct friend *)p->pointer)->friend_name);
 			free(p->pointer);
 			free(p);
@@ -194,6 +198,7 @@ void destory_connector(LinkQueue *friend_queue)
 	while(QueueLength(friend_queue) != 0){
 		dequeue_connector(friend_queue);
 	}
+	DestoryQueue(friend_queue);
 }
 
 void print_connector(LinkQueue *queue)
@@ -201,10 +206,10 @@ void print_connector(LinkQueue *queue)
 	QNode *p = queue->front;
 	
 	//printf("[PTR]%p\n",p);
-	printf("[print connectors]\n");
+	//printf("[print connectors]\n");
 	while((p = p->next)){
 		
-		printf("[elements]%s     sockfd = %d\n",((struct friend *)p->pointer)->friend_name,((struct friend *)p->pointer)->friend_socket_fd);
+		;//printf("[elements]%s     sockfd = %d\n",((struct friend *)p->pointer)->friend_name,((struct friend *)p->pointer)->friend_socket_fd);
 	}
-	printf("[print connectors end]\n");
+	//printf("[print connectors end]\n");
 }
