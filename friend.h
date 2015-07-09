@@ -39,9 +39,10 @@
 	int init_connector();
 //	int add_connector(LinkQueue *friend_queue,struct friend *friendinfo);
 	int enqueue_connector(LinkQueue *friend_queue, char *friend_name, pthread_t friend_thread_id, socket_fd friend_socket_fd);
-	int dequeue_connector(LinkQueue *friend_queue);
+	int dequeue_connector_length(LinkQueue *friend_queue);
+	int dequeue_connector(LinkQueue *friend_queue, struct friend *friend_val);
 //	int get_connector_socket_fd_by_name(LinkQueue *friend_queue, char *friend_name);
-	int find_connector_by_name(LinkQueue *friend_queue, char *friend_name, struct friend *friend_find);
+	int find_connector_by_name(LinkQueue *friend_queue, char *friend_name, struct friend *friend_val);
 	int find_connector_by_threadid(LinkQueue *friend_queue, pthread_t friend_thread_id, struct friend *friend_val);
 	int remove_connector(LinkQueue *friend_queue, char *friend_name);
 	void destory_connector(LinkQueue *friend_queue);

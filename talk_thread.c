@@ -115,14 +115,20 @@ void *talk_thread(void *arg)
 		//printf("[---------freeend---------]\n");
 	}
 	DestoryQueue(&message_recv);
-	shutdown(talk_socket_fd, SHUT_RDWR);
-	close(talk_socket_fd);	
-	printf("[need to be remove]%s\n",friend_name);
-	remove_connector(&connectors, friend_name);
+	
+/*	shutdown(talk_socket_fd, SHUT_RDWR);*/
+/*	close(talk_socket_fd);	*/
+/*	printf("[need to be remove]%s\n",friend_name);*/
+	
+/*	remove_connector(&connectors, friend_name);*/
+	if (!find_connector_by_threadid(&connectors, friend_thread_id, NULL)) {
+		printf("[need to be remove]%s\n",friend_name);
+		remove_connector(&connectors, friend_name);
+	}
+	close_talk_thread(talk_socket_fd, friend_name);
 /*	free(this);*/
 	free(friend_name);
 	pthread_exit((void *)NULL);
-	
 	//return (void *)NULL;
 }
 
@@ -141,4 +147,32 @@ void recombine_message(LinkQueue *recv_queue,char *message)
 		//printf("[---------freein---------]\n");
 		queue_length = QueueLength(recv_queue);
 	} //recombinant all data to message
+}
+
+void close_talk_thread(socket_fd talk_socket_fd, char *friend_name)
+{
+	struct friend *this;
+	this  = (struct friend *)malloc(sizeof(struct friend));
+	memset(this, 0, sizeof(struct friend));
+
+	
+		shutdown(talk_socket_fd, SHUT_RDWR);
+		close(talk_socket_fd);	
+		
+	free(this);
+}
+
+void close_all_talk_thread(LinkQueue *connectors)
+{
+	while(QueueLength(connectors)){
+		struct friend *this = (struct friend *)malloc(sizeof(struct friend));
+		memset(this, 0, sizeof(struct friend));
+		int friend_name_length = dequeue_connector_length(connectors) + 1;
+		this->friend_name = (char *)malloc(friend_name_length * sizeof(char));
+		memset(this->friend_name, 0, friend_name_length * sizeof(char));
+		dequeue_connector(connectors, this);
+		close_talk_thread(this->friend_socket_fd, this->friend_name);
+		free(this->friend_name);
+		free(this);
+	}
 }

@@ -32,6 +32,8 @@
 	
 	void init_socket();
 	int input();
+	int file_mode();
+	void send_file(char *friend_name, char *file_location);
 	void send_message(char *friend_name, char *message);
 	
 #endif /* __client_H__ */ 

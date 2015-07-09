@@ -20,8 +20,8 @@ int main (int argc, char *argv[])
 	shutdown(listen_socket_fd, SHUT_RDWR);
 	close(listen_socket_fd);
 	destory_friend_name_addr(&name_address);
+	close_all_talk_thread(&connectors);//talk_thread can't be closed by themself because recv is blocking
 	destory_connector(&connectors);
-	
 	sleep(1);
 	return 0;
 }//end main-function
@@ -48,18 +48,13 @@ void init_socket()
 
 
 int input(){
-	int input_bufsize = INPUT_BUFSIZE;
-	char *friend_name;
+	
 	memset(inputbuf, 0, INPUT_BUFSIZE);
 	setbuf(stdin, NULL);
-	fgets(inputbuf, input_bufsize, stdin);
+	fgets(inputbuf, INPUT_BUFSIZE, stdin);
 	setbuf(stdin, NULL);
-	char *result;
-	result = strtok(inputbuf, ":");
-	char *message;
-	friend_name = result;
-	result = strtok(NULL, "\n");
-	message = result;
+	char *friend_name = strtok(inputbuf, ":");
+	char *message = strtok(NULL, "\n");
 	//printf("[TEST EXIT] name %s message %s \n",friend_name, message);
 	if (friend_name != NULL && message != NULL) {
 	//	printf("[TEST] %s \n", result);
@@ -73,14 +68,52 @@ int input(){
 		client_shutdown = 1;
 		return TRUE;
 	}
-	printf("%s","Usage\t<name><:><message>\n");
-	printf("%s","\t<exit>\n");
-	printf("%s","\t<file>@<name>:<location>\n");
-
+	
+	if (!strcmp(friend_name, "file\n")){
+		file_mode();
+		return TRUE;
+	}
+	
+	printf("%s", "usage\t<$name><:><$message>\n");
+	printf("%s", "\t<exit>\n");
+	printf("%s", "\t<file>\n");
+	
+/*	if (friend_name != NULL)*/
+/*		free(friend_name);*/
+/*	if (message != NULL)*/
+/*		free(message);*/
+	
 	return FALSE;	
 }
 
-void send_message(char *friend_name,char *message){
+int file_mode(){
+	printf("[file_mode]:");
+	memset(inputbuf, 0, INPUT_BUFSIZE);
+	setbuf(stdin, NULL);
+	fgets(inputbuf, INPUT_BUFSIZE, stdin);
+	setbuf(stdin, NULL);
+	char *friend_name;
+	char *file_location;
+	friend_name = strtok(inputbuf, ":");
+	file_location = strtok(NULL, "\n");
+	
+	printf("[send] %s %s \n", friend_name, file_location);	
+	if (friend_name != NULL && file_location != NULL) {
+	//	printf("[TEST] %s \n", result);
+		printf("[bingo] %s %s \n", friend_name, file_location);		
+		send_file(friend_name, file_location);//EOF 0x04
+		return TRUE;
+	}
+	
+	printf("%s", "file mode usage\t<$name><:><$location>\n");
+	return FALSE;
+}
+
+void send_file(char *friend_name, char *message){
+	
+}
+
+void send_message(char *friend_name, char *message){
 	struct friend *this = (struct friend *)malloc(sizeof(struct friend));
 	memset(this, 0, sizeof(struct friend));
 	int result = find_connector_by_name(&connectors, friend_name, this);//is connectted?
@@ -160,12 +193,13 @@ void send_message(char *friend_name,char *message){
 		send_result = send(this->friend_socket_fd, sendbuf, strlen(sendbuf), 0);
 		free(sendbuf);
 	}
+	free(wrap_message);
 	printf("[send result]%d\n",send_result);
 	show(friend_name, message, SHOW_DIRECTION_OUT);
 	
 	end:
 	free(this);
-	free(wrap_message);
+	
 }
 
 

@@ -17,5 +17,7 @@
 	
 	void *talk_thread(void *arg);
 	void recombine_message(LinkQueue *recv_queue,char *message);
+	void close_talk_thread(socket_fd talk_socket_fd, char *friend_name);
+	void close_all_talk_thread(LinkQueue *connectors);
 #endif /* __talk_thread_H__ */ 
 

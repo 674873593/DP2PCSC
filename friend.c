@@ -125,12 +125,25 @@ int enqueue_connector(LinkQueue *friend_queue, char *friend_name, pthread_t frie
 	return result;	
 }
 
-int dequeue_connector(LinkQueue *friend_queue)
+int dequeue_connector_length(LinkQueue *friend_queue)
+{
+	return strlen(((struct friend *)friend_queue->front->next->pointer)->friend_name);
+}
+
+
+int dequeue_connector(LinkQueue *friend_queue, struct friend *friend_val)
 {
 	struct friend *connector;
 	connector = (struct friend *)malloc(sizeof(struct friend));		
 	memset(connector, 0, sizeof(struct friend));
 	int result = DeQueue(friend_queue, (void *)connector);
+	if(friend_val != NULL){
+		//memcpy(friend_val, connector, sizeof(struct friend));
+		friend_val->friend_socket_fd = connector->friend_socket_fd;
+		friend_val->friend_thread_id = connector->friend_thread_id;
+		friend_val->state = connector->state;
+		strcpy(friend_val->friend_name, connector->friend_name);
+	}
 	free(connector->friend_name);
 	free(connector);
 	return result;
@@ -146,12 +159,13 @@ int dequeue_connector(LinkQueue *friend_queue)
 /*	return 0;*/
 /*}*/
 
-int find_connector_by_name(LinkQueue *friend_queue, char *friend_name, struct friend *friend_find)
+int find_connector_by_name(LinkQueue *friend_queue, char *friend_name, struct friend *friend_val)
 {
 	QNode *p = friend_queue->front;
 	while((p = p->next)){
 		if (!strcmp(friend_name, ((struct friend *)p->pointer)->friend_name)) {
-			memcpy(friend_find, p->pointer, sizeof(struct friend));
+			if (friend_val != NULL) 
+				memcpy(friend_val, p->pointer, sizeof(struct friend));
 			return OK;
 		}
 	}
@@ -161,9 +175,12 @@ int find_connector_by_name(LinkQueue *friend_queue, char *friend_name, struct fr
 int find_connector_by_threadid(LinkQueue *friend_queue, pthread_t friend_thread_id, struct friend *friend_val)
 {
 	QNode *p = friend_queue->front;
+	printf("[address]%p\n",p);
 	while((p = p->next)){
+	printf("[address]%p\n",p);
 		if (!memcmp(&friend_thread_id, &((struct friend *)p->pointer)->friend_thread_id, sizeof(pthread_t))) {
-			memcpy(friend_val, p->pointer, sizeof(struct friend));
+			if (friend_val != NULL)
+				memcpy(friend_val, p->pointer, sizeof(struct friend));
 			return OK;
 		}
 	}
@@ -196,7 +213,7 @@ int remove_connector(LinkQueue *friend_queue, char *friend_name)
 void destory_connector(LinkQueue *friend_queue)
 {
 	while(QueueLength(friend_queue) != 0){
-		dequeue_connector(friend_queue);
+		dequeue_connector(friend_queue, NULL);
 	}
 	DestoryQueue(friend_queue);
 }
