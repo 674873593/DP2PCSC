@@ -7,7 +7,6 @@ int InitQueue(LinkQueue *Q,size_t ptr_size,size_t value_size){
 	
 	Q->front->pointer = (void*)malloc(value_size);
 	
-	
 	if(!Q->front)return ERROR;
 	Q->ptr_size=ptr_size;
 	Q->value_size=value_size;
@@ -54,6 +53,7 @@ int DestoryQueue(LinkQueue *Q){
 }
 
 int QueueLength(LinkQueue *Q){
+	printf("[Queuelength Called]\n");
 	QNode *p=Q->front;
 	int length=0;
 	while((p = p->next)){

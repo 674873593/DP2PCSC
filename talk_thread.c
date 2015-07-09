@@ -121,6 +121,7 @@ void *talk_thread(void *arg)
 /*	printf("[need to be remove]%s\n",friend_name);*/
 	
 /*	remove_connector(&connectors, friend_name);*/
+	printf("[begin find_connector]\n");
 	if (!find_connector_by_threadid(&connectors, friend_thread_id, NULL)) {
 		printf("[need to be remove]%s\n",friend_name);
 		remove_connector(&connectors, friend_name);
@@ -136,13 +137,21 @@ void recombine_message(LinkQueue *recv_queue,char *message)
 {
 	int queue_length_max = QueueLength(recv_queue);
 	int queue_length = queue_length_max;
-
+	int message_length = 0;
 	while (queue_length > 0) {
 		char *recvbuf;
 		DeQueue(recv_queue, &recvbuf);
-		printf("[combine]%s\n",recvbuf);
-		if (message != NULL)
-			memcpy(message + (RECV_BUFSIZE - 1) * (queue_length_max - queue_length), recvbuf, RECV_BUFSIZE - 1);
+		printf("[combine recvbuf]%s\n",recvbuf);
+		printf("[combine recvbuflength]%d\n",strlen(recvbuf));
+		printf("[combine message before]%s\n",message);
+		printf("[combine message start length]%d\n",(RECV_BUFSIZE - 1) * (queue_length_max - queue_length));
+		if (message != NULL){
+			memcpy(message + message_length, recvbuf, strlen(recvbuf));
+			message_length += strlen(recvbuf);
+		}
+		printf("[combine message]%s\n",message);
+		
+		printf("[combine message_length]%d\n",strlen(message));
 		free(recvbuf);
 		//printf("[---------freein---------]\n");
 		queue_length = QueueLength(recv_queue);
@@ -164,15 +173,23 @@ void close_talk_thread(socket_fd talk_socket_fd, char *friend_name)
 
 void close_all_talk_thread(LinkQueue *connectors)
 {
-	while(QueueLength(connectors)){
-		struct friend *this = (struct friend *)malloc(sizeof(struct friend));
-		memset(this, 0, sizeof(struct friend));
-		int friend_name_length = dequeue_connector_length(connectors) + 1;
-		this->friend_name = (char *)malloc(friend_name_length * sizeof(char));
-		memset(this->friend_name, 0, friend_name_length * sizeof(char));
-		dequeue_connector(connectors, this);
-		close_talk_thread(this->friend_socket_fd, this->friend_name);
-		free(this->friend_name);
-		free(this);
+/*	while(QueueLength(connectors)){*/
+/*		struct friend *this = (struct friend *)malloc(sizeof(struct friend));*/
+/*		memset(this, 0, sizeof(struct friend));*/
+/*		int friend_name_length = dequeue_connector_length(connectors) + 1;*/
+/*		this->friend_name = (char *)malloc(friend_name_length * sizeof(char));*/
+/*		memset(this->friend_name, 0, friend_name_length * sizeof(char));*/
+/*		printf("[begin dequeue one connector]!!\n");*/
+/*		dequeue_connector(connectors, this);*/
+/*		close_talk_thread(this->friend_socket_fd, this->friend_name);*/
+/*		free(this->friend_name);*/
+/*		free(this);*/
+/*	}*/
+	QNode *p = connectors->front;
+	
+	//printf("[PTR]%p\n",p);
+	//printf("[print connectors]\n");
+	while((p = p->next)){
+		close_talk_thread(((struct friend *)p->pointer)->friend_socket_fd, ((struct friend *)p->pointer)->friend_name);
 	}
 }

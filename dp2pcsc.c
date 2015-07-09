@@ -19,10 +19,16 @@ int main (int argc, char *argv[])
 	}
 	shutdown(listen_socket_fd, SHUT_RDWR);
 	close(listen_socket_fd);
+	printf("here!!\n");
 	destory_friend_name_addr(&name_address);
+	printf("there!\n");
 	close_all_talk_thread(&connectors);//talk_thread can't be closed by themself because recv is blocking
+	while (QueueLength(&connectors)){
+		printf("[Connectors Length]%d\n",QueueLength(&connectors));
+		usleep(50);
+	}
 	destory_connector(&connectors);
-	sleep(1);
+	sleep(1);//wait for other thread exit,not necssary but that can make it easy for valbrind check memory leak (include still reachable)
 	return 0;
 }//end main-function
 
