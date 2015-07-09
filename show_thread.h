@@ -5,7 +5,7 @@
 	#include <stdlib.h>
 	#include <unistd.h>
 	#include <time.h> 
-	#include <pthread.h>
+	//#include <pthread.h>
 	#include <string.h>
 	
 	#include "client.h"
