@@ -1,11 +1,11 @@
 #include "show_thread.h"
-static pthread_mutex_t lock;
+//static pthread_mutex_t lock;
 //static pthread_t *show_thread_id;
 
 void show(char *friend_name, char *message, int dirction)
 {
-	pthread_mutex_lock(&lock);
-	pthread_mutex_unlock(&lock);
+/*	pthread_mutex_lock(&lock);*/
+/*	pthread_mutex_unlock(&lock);*/
 
 	time_t time_now;
 	time(&time_now);
@@ -34,7 +34,7 @@ void init_show()
 {	
 	show_tty_running = (struct show_tty*)malloc(sizeof(struct show_tty));
 	show_tty_running->show_tty_name = (char *)malloc(SHOW_TTY_NAME_BUFSIZE);
-	pthread_mutex_init(&lock,NULL);
+/*	pthread_mutex_init(&lock,NULL);*/
 	system("bash show_tty_daemon.sh show");
 	refresh_show_tty();
 	pthread_t show_thread_id;
@@ -58,13 +58,13 @@ void refresh_show_tty()
     	fseek(file, 0L, SEEK_SET);  
     	fscanf(file, "%s %s", show_tty_pidbuf, show_tty_name);
     	
-    	pthread_mutex_lock(&lock);
+/*    	pthread_mutex_lock(&lock);*/
     	
     	show_tty_running->show_tty_pid = atoi(show_tty_pidbuf);
     	memset(show_tty_running->show_tty_name, 0, SHOW_TTY_NAME_BUFSIZE);
     	memcpy(show_tty_running->show_tty_name, show_tty_name,(strlen(show_tty_name) + 1) * sizeof(char));
 
-    	pthread_mutex_unlock(&lock);
+/*    	pthread_mutex_unlock(&lock);*/
     	free(show_tty_pidbuf);
     	free(show_tty_name);
 	fclose(file);
@@ -85,7 +85,7 @@ void *show_thread(void *arg)
 	system("bash show_tty_daemon.sh killsame");
 	free(show_tty_running->show_tty_name);
 	free(show_tty_running);
-	pthread_mutex_destroy(&lock);
+/*	pthread_mutex_destroy(&lock);*/
 	
 	pthread_exit((void *)NULL);
 }
