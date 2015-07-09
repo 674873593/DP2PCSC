@@ -76,7 +76,7 @@ void *show_thread(void *arg)
 	sleep(3);//wait for ensure no conflict with create tty in init method
 	while(!client_shutdown){
 		int is_tty_reboot = 0;
-		//is_tty_reboot = system("bash show_tty_daemon.sh isalive");
+		is_tty_reboot = system("bash show_tty_daemon.sh isalive");
 		if (is_tty_reboot) {//if a new tty created and olds are killed
 			refresh_show_tty();
 		}
