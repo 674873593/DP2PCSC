@@ -25,6 +25,7 @@ void *talk_thread(void *arg)
 	printf("[friendname]%s\n",friend_name);
 	//get friend_name
 	
+	
 	enqueue_connector(&connectors, friend_name, friend_thread_id, talk_socket_fd);
 	//enqueue_connector
 	print_connector(&connectors);
@@ -40,29 +41,109 @@ void *talk_thread(void *arg)
 	if (talk_socket_fd == 0) {
 		state = TALK_SHUTDOWN;
 	}
+	
+	
+	//need a new function wrap and unwrap
+	//int wrap(const char *from,const char head,const char tail,char *dst)
+	//int unwrap(const char *from,char head,char tail,char *dst)
+	//recv head control message
+	//	type + ETB
+	//send ACK + ETB
+
+	//head
+	//recv data + ETB
+	//send ACK + ETB
+	//
+	//	message:
+	//	while{recv SOH + message + ETB}
+	//	
+	//	file:
+	//	file_trans->accept_state FILE_UNSURE_ACCEPT wait	
+	//	file_trans->accept_state FILE_REFUSED CAN + ETB exit
+	//	file_trans->accept_state FILE_ACCEPT ACK + ETB
+	//	recv data + ETB
+	//	send ACK + ETB
+	//	recv EOT
+	
+	//judge connect type
+		
+	
+/*	//if type == MESSAGE_CONNECT*/
+/*	//while {recv data ;error goto end*/
+/*	//	recombine*/
+/*	//	unwrap*/
+/*	//	show message}*/
+/*	*/
+/*	//if type == FILE_CONNECT*/
+/*	//open file*/
+/*	//while {recv data ;error close and goto end*/
+/*	//	recombine*/
+/*	//	unwrap*/
+/*	//		write*/
+/*	//		close*/
+/*	//		send ACK	*/
+/*	//	}*/
+/*	//*/
+/*	//*/
+	
+	//while {recv data;if error set state = ONRUN/ONINIT
+	//	if(!error){
+	//		unwrap
+	//	}	
+	//	callback(talk_listener_list[type,state],arg)
+	//}
+	
+	
+	//TALKFUNC talk_listener_list[][]{
+	//	{init_message,show_message,destory_message},
+	//	{init_file,download_file,close_file}
+	//}
+	
+	//init_data_queue()--malloc
+	//new function recv_queue(Queue)
+	//destory_data_queue()--free
+	//struct talk_listener_arg{
+	//	char *unwrap_message;
+	//	void *pointer;
+	//}arg;
+	//
+	//recv type = atoi(unwrap(data))
+	//send wrap(ACK)
+	//state = ONINIT
+	//if type == FILE_CONNECT;arg->pointer = FILE *
+	//if type == MESSAGE_CONNECT;arg->pointer = NULL
+	//callback(talk_listener_list[type,state],arg)
+	//while {recv data;
+	//	if error {set state = ONRUN/ONDESTROY}
+	//	if(!error){
+	//		unwrap
+	//	}	
+	//	callback(talk_listener_list[type,state],arg)
+	//}
 	Queue message_recv;
 	InitQueue(&message_recv, sizeof(char **), sizeof(char *));
 	
-	//int bufsize = RECV_BUFSIZE;
 	
 	while (!state && !client_shutdown) {
 		int recv_result;
 		int recv_end = 0;
+			
 		do {	
 			char *recvbuf = (char *)malloc((RECV_BUFSIZE + 1) * sizeof(char));
 			printf("[---------malloc---------]\n");
 			memset(recvbuf, 0, (RECV_BUFSIZE + 1) * sizeof(char));
-			//TODO can't get the right socket fd
-			//printf("[sockfd]%d\n",friend_socket_fd);
 			printf("[begin recv]\n");
 			recv_result = recv(talk_socket_fd, recvbuf, RECV_BUFSIZE - 1, 0);
 			printf("[recv result]%d\n",recv_result);
 			printf("[recv buff]%s\n",recvbuf);
 			
-			if (strcspn(recvbuf,"\x4") == (recv_result - 1)) {
+			if (strcspn(recvbuf,"\x17") == (recv_result - 1)) {
 				memset(recvbuf + recv_result - 1, 0, 1);
 				recv_end = 1;
 			}
+			
+
+
 			EnQueue(&message_recv, &recvbuf);
 			if (recv_result == 0) 
 				goto end;
@@ -72,29 +153,22 @@ void *talk_thread(void *arg)
 			
 		} while (!recv_end &&( recv_result > 0 || (recv_result < 0 && (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN))));//receive all data
 		printf("[get out from while!!!!]\n");
-		
-/*		int queue_length_max = QueueLength(&message_recv);*/
-/*		int queue_length = queue_length_max;*/
-/*		char *message = (char *)malloc(bufsize * sizeof(char) * (queue_length_max + 1));*/
-/*		memset(message, 0, bufsize * sizeof(char) * (queue_length_max + 1));*/
-/*		do {*/
-//			char *recvbuf/*= (char *)malloc(bufsize * sizeof(char))*/;
-/*			//memset(recvbuf, 0,bufsize * sizeof(char));*/
-/*			DeQueue(&message_recv, &recvbuf);*/
-/*			memcpy(message + bufsize * (queue_length_max - queue_length), recvbuf, bufsize);*/
-/*			free(recvbuf);*/
-/*			queue_length = QueueLength(&message_recv);*/
-/*		} while (queue_length > 0);//recombinant all data to message*/
-/*		*/
-/*		if (strlen(message)) {*/
-/*			printf("[message]%s\n[length]%d\n",message,strlen(message));*/
-/*			show(this->friend_name, message, SHOW_DIRECTION_IN);*/
-/*		}*/
-/*		free(message);*/
+	
+	
+	
+
+	
 		int queue_length_max = QueueLength(&message_recv);
 		char *message = (char *)malloc(RECV_BUFSIZE * sizeof(char) * (queue_length_max + 1));
 		memset(message, 0, RECV_BUFSIZE * sizeof(char) * (queue_length_max + 1));
 		recombine_message(&message_recv, message);
+	
+		
+	
+		
+	
+		//show message
+
 		if (strlen(message)) {
 			printf("[message]%s\n[length]%d\n",message,strlen(message));
 			show(friend_name, message, SHOW_DIRECTION_IN);
@@ -122,11 +196,12 @@ void *talk_thread(void *arg)
 	
 /*	remove_connector(&connectors, friend_name);*/
 	printf("[begin find_connector]\n");
+	printf("[connectors next]%p %p",connectors,(&connectors)->front);
 	if (!find_connector_by_threadid(&connectors, friend_thread_id, NULL)) {
-		printf("[need to be remove]%s\n",friend_name);
-		remove_connector(&connectors, friend_name);
+		printf("[need to be remove]%s sockfd=%d\n",friend_name,talk_socket_fd);
+		remove_connector(&connectors, talk_socket_fd);
 	}
-	close_talk_thread(talk_socket_fd, friend_name);
+	close_connector(talk_socket_fd);
 /*	free(this);*/
 	free(friend_name);
 	pthread_exit((void *)NULL);
@@ -155,41 +230,9 @@ void recombine_message(LinkQueue *recv_queue,char *message)
 		free(recvbuf);
 		//printf("[---------freein---------]\n");
 		queue_length = QueueLength(recv_queue);
-	} //recombinant all data to message
+	} //recombine all data to message
 }
 
-void close_talk_thread(socket_fd talk_socket_fd, char *friend_name)
-{
-	struct friend *this;
-	this  = (struct friend *)malloc(sizeof(struct friend));
-	memset(this, 0, sizeof(struct friend));
 
-	
-		shutdown(talk_socket_fd, SHUT_RDWR);
-		close(talk_socket_fd);	
-		
-	free(this);
-}
 
-void close_all_talk_thread(LinkQueue *connectors)
-{
-/*	while(QueueLength(connectors)){*/
-/*		struct friend *this = (struct friend *)malloc(sizeof(struct friend));*/
-/*		memset(this, 0, sizeof(struct friend));*/
-/*		int friend_name_length = dequeue_connector_length(connectors) + 1;*/
-/*		this->friend_name = (char *)malloc(friend_name_length * sizeof(char));*/
-/*		memset(this->friend_name, 0, friend_name_length * sizeof(char));*/
-/*		printf("[begin dequeue one connector]!!\n");*/
-/*		dequeue_connector(connectors, this);*/
-/*		close_talk_thread(this->friend_socket_fd, this->friend_name);*/
-/*		free(this->friend_name);*/
-/*		free(this);*/
-/*	}*/
-	QNode *p = connectors->front;
-	
-	//printf("[PTR]%p\n",p);
-	//printf("[print connectors]\n");
-	while((p = p->next)){
-		close_talk_thread(((struct friend *)p->pointer)->friend_socket_fd, ((struct friend *)p->pointer)->friend_name);
-	}
-}
+

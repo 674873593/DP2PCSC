@@ -16,11 +16,7 @@
 	#include "listen_thread.h"
 	#include "talk_thread.h"
 	#include "show_thread.h"
-	
-	
-
-	#define TRUE 0
-	#define FALSE 1
+	#include "ulib.h"
 	
 	
 	extern socket_fd listen_socket_fd;
