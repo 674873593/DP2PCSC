@@ -116,7 +116,27 @@ int file_mode(){
 }
 
 void send_file(char *friend_name, char *message){
+	//is friend exist?
+	//is file exist?
+	//trans file thread and connect success ;;;; must Init File Server Socket in main
 	
+	
+	//nonblock mode
+	//Sender: open file;init struct file_trans
+	//Recviver: init struct file_trans;recv
+	//	Sender: SOH+filename+ETB;
+	//	Recviver: struct file_trans->name = filename;file_trans->id=id++;file_trans->accept_state = FILE_UNSURE_ACCEPT
+	//		Sender: ENQ;wait for recv in while
+	//		Recvier: break recv while;show Servername+file_trans->filename+file_trans->id;wait for file_trans->accept_state==FILE_ACCEPT(FILE_ACCEPT;FILE_REFUSED;FILE_UNSURE_ACCEPT);ACK/CAN;if CAN close socket;goto end
+	//		Recv FileMode:<fileaccept><:><$id>,find_trans by id,file_trans->accept_state=FILE_ACCEPT
+	//				<filerefused><:><$id>,file_trans->accept_state=FILE_REFUSED
+	//		Recvier: open file
+	//			Sender: STX+package+ETB; repeat
+	//			Recviver: fwrite package into file; repeat
+	//				Sender: EOT;
+	//			end:	Recviver: close socket;close file
+	//			end:	Sender:close socket;close file
+	//Send will exit when client_shutdown==1 in while-check 
 }
 
 void send_message(char *friend_name, char *message){
@@ -125,7 +145,8 @@ void send_message(char *friend_name, char *message){
 	int result = find_connector_by_name(&connectors, friend_name, this);//is connectted?
 	print_connector(&connectors);
 	printf("findresult  %d \n", result);
-	if (result) {//make new connect & create talk_thread
+	if (result) {//TODO new function  make new connect & create talk_thread
+			//TODO ensure this->friend_socket_fd be refreshed
 		socket_fd friend_socket_fd;
 		memset(&friend_socket_fd, 0, sizeof(socket_fd));
 		friend_socket_fd = socket(PF_INET, SOCK_STREAM, 0);//PF_INET->TCP/IP Protocol Family,SOCK_STREAM->TCP
@@ -170,12 +191,16 @@ void send_message(char *friend_name, char *message){
 /*			free(this->friend_name);*/
 /*		}*/
 	}
-/*	else{*/
-/*		this->friend_socket_fd = get_connector_socket_fd_by_name(&connectors, friend_name);*/
-/*		printf("已经链接\n");//TODO send to socket_fd which in connectors by get_connector_socket_fd*/
-/*	}*/
+
 	int message_length = strlen(message);
 	int wrap_message_length = message_length + 2;
+	
+	
+	//TODO make into a new function message_insert(char *src,char *insert,callback *function)
+	//TODO new dst = malloc(srclen+insertlen+1);memset()
+	//TODO dst = src+insert
+	//TODO callback(dst)
+	//TODO free(dst)
 	
 	char *wrap_message = (char *)malloc(wrap_message_length * sizeof(char));
 	memset(wrap_message, 0, wrap_message_length * sizeof(char));
@@ -194,12 +219,16 @@ void send_message(char *friend_name, char *message){
 	for (int i = 0; i <= wrap_message_length / SEND_BUFSIZE; i += 1) {
 		char *sendbuf = (char *)malloc((SEND_BUFSIZE + 1) * sizeof(char));
 		memset(sendbuf, 0, (SEND_BUFSIZE + 1) * sizeof(char));
-		//TODO split string to sendbuf
 		strncpy(sendbuf, wrap_message + i * SEND_BUFSIZE, SEND_BUFSIZE);
 		send_result = send(this->friend_socket_fd, sendbuf, strlen(sendbuf), 0);
 		free(sendbuf);
 	}
 	free(wrap_message);
+	
+	//TODO end
+	
+	
+	
 	printf("[send result]%d\n",send_result);
 	show(friend_name, message, SHOW_DIRECTION_OUT);
 	
