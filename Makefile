@@ -3,7 +3,7 @@ PRONAME		=dp2pcsc
 
 
 CC			=gcc
-OBJECTS		=$(PRONAME).o Queue.o friend.o listen_thread.o talk_thread.o show_thread.o
+OBJECTS		=$(PRONAME).o Queue.o friend.o listen_thread.o talk_thread.o show_thread.o ulib.o
 CFLAGS		=-std=gnu11 -g -lpthread  -Wall
 
 ### todo
@@ -32,6 +32,8 @@ talk_thread.o:talk_thread.h
 show_thread.o:show_thread.h
 
 Queue.o:Queue.h
+
+ulib.o:ulib.h
 
 .PHONY:clean 
 clean:

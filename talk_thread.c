@@ -230,15 +230,7 @@ void recombine_message(LinkQueue *recv_queue,char *message)
 	} //recombine all data to message
 }
 
-int wrap(const char *from,const char head,const char tail,char *dst)
-{
-	
-}
-int unwrap(const char *from,char head,char tail,char *dst)
-{
 
-
-}
 
 void close_talk_thread(socket_fd talk_socket_fd, char *friend_name)
 {

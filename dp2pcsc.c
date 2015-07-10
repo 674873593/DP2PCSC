@@ -194,20 +194,23 @@ void send_message(char *friend_name, char *message){
 /*		}*/
 	}
 
-	int message_length = strlen(message);
-	int wrap_message_length = message_length + 2;
-	
-	//change to wrap and unwrap
-	//TODO make into a new function message_insert(char *src,char *insert,callback *function)
-	//TODO new dst = malloc(srclen+insertlen+1);memset()
-	//TODO dst = src+insert
-	//TODO callback(dst)
-	//TODO free(dst)
-	
-	char *wrap_message = (char *)malloc(wrap_message_length * sizeof(char));
-	memset(wrap_message, 0, wrap_message_length * sizeof(char));
-	strncpy(wrap_message, message, message_length);
-	strncpy((wrap_message + message_length), "\x4", 1);
+/*	int message_length = strlen(message);*/
+/*	int wrap_message_length = message_length + 2;*/
+/*	*/
+/*	//change to wrap and unwrap*/
+/*	//TODO make into a new function message_insert(char *src,char *insert,callback *function)*/
+/*	//TODO new dst = malloc(srclen+insertlen+1);memset()*/
+/*	//TODO dst = src+insert*/
+/*	//TODO callback(dst)*/
+/*	//TODO free(dst)*/
+/*	*/
+/*	char *wrap_message = (char *)malloc(wrap_message_length * sizeof(char));*/
+/*	memset(wrap_message, 0, wrap_message_length * sizeof(char));*/
+/*	strncpy(wrap_message, message, message_length);*/
+/*	strncpy((wrap_message + message_length), "\x4", 1);*/
+	int wrap_message_length = strlen(message) + 3;
+	char *wrap_message = (char *)malloc_safe(wrap_message, wrap_message_length);
+	wrap(message, STX, EOT, wrap_message);
 	printf("[wrap]%s\n",wrap_message);
 	printf("[message]%s\n",message);
 	//int input_length = strlen(message);
@@ -217,7 +220,7 @@ void send_message(char *friend_name, char *message){
 	printf("[this->fd]%d\n",this->friend_socket_fd);
 	int send_result;
 	
-	
+	//TODO make a new function send_split(char *data)
 	for (int i = 0; i <= wrap_message_length / SEND_BUFSIZE; i += 1) {
 		char *sendbuf = (char *)malloc((SEND_BUFSIZE + 1) * sizeof(char));
 		memset(sendbuf, 0, (SEND_BUFSIZE + 1) * sizeof(char));
