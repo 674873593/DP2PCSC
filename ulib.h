@@ -20,7 +20,6 @@
 	 * along with dp2pcsc. If not, see <http://www.gnu.org/licenses/>.
 	 */
 	
-	
 	#include <stdlib.h>
 	#include <string.h>
 
@@ -42,6 +41,6 @@
 	#endif
 	
 	
-	int wrap(const char *from,const char head,const char tail,char *to);
-	int unwrap(char *str,char *head,char *tail);
+	int wrap(const char *from, const char tail,char *to);
+	int unwrap(char *str, char *tail);
 #endif /* __ulib_H__ */ 

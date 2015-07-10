@@ -82,9 +82,10 @@ void *show_thread(void *arg)
 		}
 		sleep(1);
 	}
-	system("bash show_tty_daemon.sh killsame");
+	
  	free(show_tty_running->show_tty_name);
 	free(show_tty_running);
+	system("bash show_tty_daemon.sh killsame");
 /*	pthread_mutex_destroy(&lock);*/
 	
 	pthread_exit((void *)NULL);

@@ -53,11 +53,12 @@ int DestoryQueue(LinkQueue *Q){
 }
 
 int QueueLength(LinkQueue *Q){
-	printf("[Queuelength Called]\n");
+	//printf("[Queuelength Called]\n");
 	QNode *p=Q->front;
 	int length=0;
 	while((p = p->next)){
 		length++;
 	}
+	//printf("[QueueLength] %d\n",length);
 	return length;
 }

@@ -22,9 +22,9 @@ int main (int argc, char *argv[])
 	printf("here!!\n");
 	destory_friend_name_addr(&name_address);
 	printf("there!\n");
-	close_all_talk_thread(&connectors);//talk_thread can't be closed by themself because recv is blocking
+	close_all_connector(&connectors);//talk_thread can't be closed by themself because recv is blocking
 	while (QueueLength(&connectors)){
-		printf("[Connectors Length]%d\n",QueueLength(&connectors));
+		//printf("[Connectors Length]%d\n",QueueLength(&connectors));
 		usleep(50);
 	}
 	destory_connector(&connectors);
@@ -144,6 +144,7 @@ void send_file(char *friend_name, char *message){
 void send_message(char *friend_name, char *message){
 	struct friend *this = (struct friend *)malloc(sizeof(struct friend));
 	memset(this, 0, sizeof(struct friend));
+	
 	int result = find_connector_by_name(&connectors, friend_name, this);//is connectted?
 	print_connector(&connectors);
 	printf("findresult  %d \n", result);
@@ -156,6 +157,7 @@ void send_message(char *friend_name, char *message){
 		char friend_ip[16] = {0};
 		int gfa_result;
 		gfa_result = get_friend_address(&name_address , friend_name, (char *)&friend_ip);
+		printf("[gfa_result]%d\n",gfa_result);
 		printf("[get_address result]%s\n",friend_ip);
 		if (gfa_result) {
 			goto end;
@@ -208,9 +210,9 @@ void send_message(char *friend_name, char *message){
 /*	memset(wrap_message, 0, wrap_message_length * sizeof(char));*/
 /*	strncpy(wrap_message, message, message_length);*/
 /*	strncpy((wrap_message + message_length), "\x4", 1);*/
-	int wrap_message_length = strlen(message) + 3;
+	int wrap_message_length = strlen(message) + 2;
 	char *wrap_message = (char *)malloc_safe(wrap_message, wrap_message_length);
-	wrap(message, STX, EOT, wrap_message);
+	wrap(message, ETB, wrap_message);
 	printf("[wrap]%s\n",wrap_message);
 	printf("[message]%s\n",message);
 	//int input_length = strlen(message);
@@ -220,7 +222,7 @@ void send_message(char *friend_name, char *message){
 	printf("[this->fd]%d\n",this->friend_socket_fd);
 	int send_result;
 	
-	//TODO make a new function send_split(char *data)
+	//TODO make a new function send_split(char *data) recv_split(LinkQueue *)
 	for (int i = 0; i <= wrap_message_length / SEND_BUFSIZE; i += 1) {
 		char *sendbuf = (char *)malloc((SEND_BUFSIZE + 1) * sizeof(char));
 		memset(sendbuf, 0, (SEND_BUFSIZE + 1) * sizeof(char));
@@ -228,7 +230,7 @@ void send_message(char *friend_name, char *message){
 		send_result = send(this->friend_socket_fd, sendbuf, strlen(sendbuf), 0);
 		free(sendbuf);
 	}
-	free(wrap_message);
+	free_safe(wrap_message);
 	
 	//TODO end
 	

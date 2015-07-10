@@ -45,7 +45,9 @@
 //	int get_connector_socket_fd_by_name(LinkQueue *friend_queue, char *friend_name);
 	int find_connector_by_name(LinkQueue *friend_queue, char *friend_name, struct friend *friend_val);
 	int find_connector_by_threadid(LinkQueue *friend_queue, pthread_t friend_thread_id, struct friend *friend_val);
-	int remove_connector(LinkQueue *friend_queue, char *friend_name);
+	int remove_connector(LinkQueue *friend_queue, socket_fd talk_socket_fd);
+	void close_connector(socket_fd talk_socket_fd);
+	void close_all_connector(LinkQueue *friend_queue);
 	void destory_connector(LinkQueue *friend_queue);
 	void print_connector(LinkQueue *queue);
 	//int get_friend_addr(char *friend_name,char *friend_ip);
