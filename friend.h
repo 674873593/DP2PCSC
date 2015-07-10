@@ -18,6 +18,7 @@
 		char *friend_name;
 		pthread_t friend_thread_id;
 		socket_fd friend_socket_fd;
+		int type;//MESSAGE_CONNECT FILE_CONNECT
 		int state;};//TALK_RUNNING TALK_SHUTDOWN
 	
 	Queue connectors;

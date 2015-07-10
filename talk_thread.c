@@ -40,15 +40,94 @@ void *talk_thread(void *arg)
 	if (talk_socket_fd == 0) {
 		state = TALK_SHUTDOWN;
 	}
+	
+	
+	//need a new function wrap and unwrap
+	//int wrap(const char *from,const char head,const char tail,char *dst)
+	//int unwrap(const char *from,char head,char tail,char *dst)
+	//recv head control message
+	//	SOH + type + ETB
+	//send SOH + ACK + ETB
+
+	//head
+	//recv SOH + data + ETB
+	//send SOH + ACK + ETB
+	//
+	//	message:
+	//	while{recv SOH + message + ETB}
+	//	
+	//	file:
+	//	file_trans->accept_state FILE_UNSURE_ACCEPT wait	
+	//	file_trans->accept_state FILE_REFUSED SOH + CAN + ETB exit
+	//	file_trans->accept_state FILE_ACCEPT SOH + ACK + ETB
+	//	recv SOH + data + ETB
+	//	send SOH + ACK + ETB
+	//	recv EOT
+	
+	//judge connect type
+		
+	
+/*	//if type == MESSAGE_CONNECT*/
+/*	//while {recv data ;error goto end*/
+/*	//	recombine*/
+/*	//	unwrap*/
+/*	//	show message}*/
+/*	*/
+/*	//if type == FILE_CONNECT*/
+/*	//open file*/
+/*	//while {recv data ;error close and goto end*/
+/*	//	recombine*/
+/*	//	unwrap*/
+/*	//		write*/
+/*	//		close*/
+/*	//		send ACK	*/
+/*	//	}*/
+/*	//*/
+/*	//*/
+	
+	//while {recv data;if error set state = ONRUN/ONINIT
+	//	if(!error){
+	//		unwrap
+	//	}	
+	//	callback(talk_listener_list[type,state],arg)
+	//}
+	
+	
+	//TALKFUNC talk_listener_list[][]{
+	//	{init_message,show_message,destory_message},
+	//	{init_file,download_file,close_file}
+	//}
+	
+	//init_data_queue()--malloc
+	//new function recv_queue(Queue)
+	//destory_data_queue()--free
+	//struct talk_listener_arg{
+	//	char *unwrap_message;
+	//	void *pointer;
+	//}arg;
+	//
+	//recv type = atoi(unwrap(data))
+	//send wrap(ACK)
+	//state = ONINIT
+	//if type == FILE_CONNECT;arg->pointer = FILE *
+	//if type == MESSAGE_CONNECT;arg->pointer = NULL
+	//callback(talk_listener_list[type,state],arg)
+	//while {recv data;
+	//	if error {set state = ONRUN/ONDESTROY}
+	//	if(!error){
+	//		unwrap
+	//	}	
+	//	callback(talk_listener_list[type,state],arg)
+	//}
 	Queue message_recv;
 	InitQueue(&message_recv, sizeof(char **), sizeof(char *));
 	
-	//int bufsize = RECV_BUFSIZE;
 	
 	while (!state && !client_shutdown) {
 		int recv_result;
 		int recv_end = 0;
-		do {	
+			
+			do {	
 			char *recvbuf = (char *)malloc((RECV_BUFSIZE + 1) * sizeof(char));
 			printf("[---------malloc---------]\n");
 			memset(recvbuf, 0, (RECV_BUFSIZE + 1) * sizeof(char));
@@ -72,29 +151,22 @@ void *talk_thread(void *arg)
 			
 		} while (!recv_end &&( recv_result > 0 || (recv_result < 0 && (errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN))));//receive all data
 		printf("[get out from while!!!!]\n");
-		
-/*		int queue_length_max = QueueLength(&message_recv);*/
-/*		int queue_length = queue_length_max;*/
-/*		char *message = (char *)malloc(bufsize * sizeof(char) * (queue_length_max + 1));*/
-/*		memset(message, 0, bufsize * sizeof(char) * (queue_length_max + 1));*/
-/*		do {*/
-//			char *recvbuf/*= (char *)malloc(bufsize * sizeof(char))*/;
-/*			//memset(recvbuf, 0,bufsize * sizeof(char));*/
-/*			DeQueue(&message_recv, &recvbuf);*/
-/*			memcpy(message + bufsize * (queue_length_max - queue_length), recvbuf, bufsize);*/
-/*			free(recvbuf);*/
-/*			queue_length = QueueLength(&message_recv);*/
-/*		} while (queue_length > 0);//recombinant all data to message*/
-/*		*/
-/*		if (strlen(message)) {*/
-/*			printf("[message]%s\n[length]%d\n",message,strlen(message));*/
-/*			show(this->friend_name, message, SHOW_DIRECTION_IN);*/
-/*		}*/
-/*		free(message);*/
+	
+	
+	
+
+	
 		int queue_length_max = QueueLength(&message_recv);
 		char *message = (char *)malloc(RECV_BUFSIZE * sizeof(char) * (queue_length_max + 1));
 		memset(message, 0, RECV_BUFSIZE * sizeof(char) * (queue_length_max + 1));
 		recombine_message(&message_recv, message);
+	
+		
+	
+		
+	
+		//show message
+
 		if (strlen(message)) {
 			printf("[message]%s\n[length]%d\n",message,strlen(message));
 			show(friend_name, message, SHOW_DIRECTION_IN);
@@ -155,7 +227,17 @@ void recombine_message(LinkQueue *recv_queue,char *message)
 		free(recvbuf);
 		//printf("[---------freein---------]\n");
 		queue_length = QueueLength(recv_queue);
-	} //recombinant all data to message
+	} //recombine all data to message
+}
+
+int wrap(const char *from,const char head,const char tail,char *dst)
+{
+	
+}
+int unwrap(const char *from,char head,char tail,char *dst)
+{
+
+
 }
 
 void close_talk_thread(socket_fd talk_socket_fd, char *friend_name)
