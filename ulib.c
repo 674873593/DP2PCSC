@@ -8,7 +8,7 @@ int wrap(const char *from,const char head,const char tail,char *to)
 	//sprintf(to, "%c%s%c", head, from, tail);
 	memset(to, head, 1);
 	strncpy(to + sizeof(head), from, from_str_length);
-	memset(to + from_str_length + sizeof(tail), 0, 1);
+	memset(to + from_str_length + sizeof(tail), tail, 1);
 	return TRUE;
 }
 
