@@ -254,6 +254,13 @@ int find_connector_by_threadid(LinkQueue *friend_queue, pthread_t friend_thread_
 	return ERROR;
 }
 
+int connector_length(LinkQueue *friend_queue)
+{
+	pthread_rwlock_rdlock(&connector_rwlock);
+	int length = QueueLength(friend_queue);
+	pthread_rwlock_unlock(&connector_rwlock);
+	return length;
+}
 
 int remove_connector(LinkQueue *friend_queue, socket_fd talk_socket_fd)
 {
@@ -275,7 +282,7 @@ int remove_connector(LinkQueue *friend_queue, socket_fd talk_socket_fd)
 			free_safe(((struct friend *)p->pointer)->friend_name);
 			free_safe(p->pointer);
 			free_safe(p);
-			pthread_rwlock_unlock(&connector_rwlock);
+			
 	//		printf("<end wrlock 1>\n");
 			
 			//if (friend_queue->front->next == NULL) {
@@ -286,6 +293,7 @@ int remove_connector(LinkQueue *friend_queue, socket_fd talk_socket_fd)
 			printf("[remove_connector connectors rear]%p\n", friend_queue->rear);
 			printf("[remove_connector connectors front->next]%p\n",friend_queue->front->next);
 			printf("[remove_connector connectors rear->next]%p\n",friend_queue->rear->next);
+			pthread_rwlock_unlock(&connector_rwlock);
 			return OK;
 		}
 		before = p;

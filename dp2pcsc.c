@@ -23,8 +23,8 @@ int main (int argc, char *argv[])
 	destory_friend_name_addr(&name_address);
 	printf("there!\n");
 	close_all_connector(&connectors);//talk_thread can't be closed by themself because recv is blocking
-	while (QueueLength(&connectors)){
-		//printf("[Connectors Length]%d\n",QueueLength(&connectors));
+	while (connector_length(&connectors)){
+		printf("[Connectors Length]%d\n",connector_length(&connectors));
 		usleep(50);
 	}
 	destory_connector(&connectors);
