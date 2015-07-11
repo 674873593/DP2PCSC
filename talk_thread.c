@@ -42,9 +42,9 @@ void *talk_thread(void *arg)
 	}
 	
 	
-	//need a new function wrap and unwrap
+	//need a new function wrap and un_wrap
 	//int wrap(const char *from,const char head,const char tail,char *dst)
-	//int unwrap(const char *from,char head,char tail,char *dst)
+	//int un_wrap(const char *from,char head,char tail,char *dst)
 	//recv head control message
 	//	type + ETB
 	//send ACK + ETB
@@ -70,14 +70,14 @@ void *talk_thread(void *arg)
 /*	//if type == MESSAGE_CONNECT*/
 /*	//while {recv data ;error goto end*/
 /*	//	recombine*/
-/*	//	unwrap*/
+/*	//	un_wrap*/
 /*	//	show message}*/
 /*	*/
 /*	//if type == FILE_CONNECT*/
 /*	//open file*/
 /*	//while {recv data ;error close and goto end*/
 /*	//	recombine*/
-/*	//	unwrap*/
+/*	//	un_wrap*/
 /*	//		write*/
 /*	//		close*/
 /*	//		send ACK	*/
@@ -87,7 +87,7 @@ void *talk_thread(void *arg)
 	
 	//while {recv data;if error set state = ONRUN/ONINIT
 	//	if(!error){
-	//		unwrap
+	//		un_wrap
 	//	}	
 	//	callback(talk_listener_list[type,state],arg)
 	//}
@@ -102,11 +102,11 @@ void *talk_thread(void *arg)
 	//new function recv_queue(Queue)
 	//destory_data_queue()--free
 	//struct talk_listener_arg{
-	//	char *unwrap_message;
+	//	char *un_wrap_message;
 	//	void *pointer;
 	//}arg;
 	//
-	//recv type = atoi(unwrap(data))
+	//recv type = atoi(un_wrap(data))
 	//send wrap(ACK)
 	//state = ONINIT
 	//if type == FILE_CONNECT;arg->pointer = FILE *
@@ -115,7 +115,7 @@ void *talk_thread(void *arg)
 	//while {recv data;
 	//	if error {set state = ONRUN/ONDESTROY}
 	//	if(!error){
-	//		unwrap
+	//		un_wrap
 	//	}	
 	//	callback(talk_listener_list[type,state],arg)
 	//}
@@ -135,11 +135,15 @@ void *talk_thread(void *arg)
 			recv_result = recv(talk_socket_fd, recvbuf, RECV_BUFSIZE - 1, 0);
 			printf("[recv result]%d\n",recv_result);
 			printf("[recv buff]%s\n",recvbuf);
-			
-			if (strcspn(recvbuf,"\x17") == (recv_result - 1)) {
-				memset(recvbuf + recv_result - 1, 0, 1);
+			//printf("[get wrap]%c\n",get_wrap(recvbuf));
+			if (!compare_wrap(recvbuf,ETB)) {
 				recv_end = 1;
+				un_wrap(recvbuf, NULL);
 			}
+/*			if (strcspn(recvbuf,"\x17") == (recv_result - 1)) {*/
+/*				memset(recvbuf + recv_result - 1, 0, 1);*/
+/*				recv_end = 1;*/
+/*			}*/
 			
 
 

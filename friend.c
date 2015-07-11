@@ -138,10 +138,10 @@ int init_connector(LinkQueue *friend_queue)
 	//printf("<init wrlock 1>\n");
 	pthread_rwlock_init(&connector_rwlock, NULL);
 	int result = InitQueue(friend_queue, sizeof(struct friend));
-	printf("[connectors front]%p\n", friend_queue->front);
-	printf("[connectors rear]%p\n", friend_queue->rear);
-	printf("[connectors front->next]%p\n",friend_queue->front->next);
-	printf("[connectors rear->next]%p\n",friend_queue->rear->next);
+	printf("[init_connector connectors front]%p\n", friend_queue->front);
+	printf("[init_connector rear]%p\n", friend_queue->rear);
+	printf("[init_connector front->next]%p\n",friend_queue->front->next);
+	printf("[init_connector rear->next]%p\n",friend_queue->rear->next);
 	return result;
 }
 
@@ -163,10 +163,10 @@ int enqueue_connector(LinkQueue *friend_queue, char *friend_name, pthread_t frie
 	pthread_rwlock_unlock(&connector_rwlock);
 	//printf("<end wrlock 1>\n");
 	free_safe(connector);
-	printf("[connectors front]%p\n", friend_queue->front);
-	printf("[connectors rear]%p\n", friend_queue->rear);
-	printf("[connectors front->next]%p\n",friend_queue->front->next);
-	printf("[connectors rear->next]%p\n",friend_queue->rear->next);
+	printf("[enqueue_connector connectors front]%p\n", friend_queue->front);
+	printf("[enqueue_connector connectors rear]%p\n", friend_queue->rear);
+	printf("[enqueue_connector connectors front->next]%p\n",friend_queue->front->next);
+	printf("[enqueue_connector connectors rear->next]%p\n",friend_queue->rear->next);
 	return result;	
 }
 
@@ -282,10 +282,10 @@ int remove_connector(LinkQueue *friend_queue, socket_fd talk_socket_fd)
 			
 			//print_connector(friend_queue);//TODO remove
 			
-			printf("[connectors front]%p\n", friend_queue->front);
-			printf("[connectors rear]%p\n", friend_queue->rear);
-			printf("[connectors front->next]%p\n",friend_queue->front->next);
-			printf("[connectors rear->next]%p\n",friend_queue->rear->next);
+			printf("[remove_connector connectors front]%p\n", friend_queue->front);
+			printf("[remove_connector connectors rear]%p\n", friend_queue->rear);
+			printf("[remove_connector connectors front->next]%p\n",friend_queue->front->next);
+			printf("[remove_connector connectors rear->next]%p\n",friend_queue->rear->next);
 			return OK;
 		}
 		before = p;

@@ -42,5 +42,6 @@
 	
 	
 	int wrap(const char *from, const char tail,char *to);
-	int unwrap(char *str, char *tail);
+	int un_wrap(char *str, char *tail);
+	int compare_wrap(const char *str,char tail);
 #endif /* __ulib_H__ */ 
