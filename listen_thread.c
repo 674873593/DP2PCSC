@@ -21,8 +21,6 @@ void *listen_thread(void *arg)
 		}
 	}
 	
-	//free(listen_thread_id);
-	
 	pthread_exit((void *)NULL);
 	//return (void *)NULL;
 }

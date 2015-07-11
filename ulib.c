@@ -11,17 +11,27 @@ int wrap(const char *from, const char tail, char *to)
 	return TRUE;
 }
 
-int unwrap(char *str, char *tail)
+int un_wrap(char *str, char *tail)
 {
-	if (str == NULL || tail == NULL) 
+	if (str == NULL) 
 		return FALSE;
 	size_t tail_position = (strlen(str) - 1) * sizeof(char);
 	//*head = *str;
-	*tail = *(str + tail_position);
+	if (tail != NULL)
+		*tail = *(str + tail_position);
 	//printf("[unwrap before]%s\n",str);
 	memset(str + tail_position, 0, 1);
 	//printf("[unwrap settail]%s\n",str);
 	//memmove(str, str + 1,tail_position);
 	//printf("[unwrap mmove]%s\n",str);
 	return TRUE;
+}
+
+int compare_wrap(const char *str,char tail)
+{
+	char tailstr[2] = {tail, 0};
+	if (strcspn(str,tailstr) == strlen(str) - 1)
+		return TRUE;
+	else
+		return FALSE;
 }

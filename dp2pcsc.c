@@ -7,7 +7,7 @@ int main (int argc, char *argv[])
 {
 	client_shutdown = 0;
 	init_friend_name_addr();//must be init first,load friend name reflects to address from file
-	init_connector();
+	init_connector(&connectors);
 	init_socket();
 	init_show();
 /*	print_name_addr(&name_address);*/
@@ -23,11 +23,12 @@ int main (int argc, char *argv[])
 	destory_friend_name_addr(&name_address);
 	printf("there!\n");
 	close_all_connector(&connectors);//talk_thread can't be closed by themself because recv is blocking
-	while (QueueLength(&connectors)){
-		//printf("[Connectors Length]%d\n",QueueLength(&connectors));
+	while (connector_length(&connectors)){
+		printf("[Connectors Length]%d\n",connector_length(&connectors));
 		usleep(50);
 	}
 	destory_connector(&connectors);
+	destory_show_tty();
 	sleep(1);//wait for other thread exit,not necssary but that can make it easy for valbrind check memory leak (include still reachable)
 	return 0;
 }//end main-function
@@ -45,7 +46,7 @@ void init_socket()
 	listen_addr_in.sin_port = htons(SERVER_PORT);
 	bind(listen_socket_fd,(struct sockaddr *)&listen_addr_in,sizeof(listen_addr_in));
 	listen(listen_socket_fd,LISTEN_LIST_LENGTH);//set listen list length,begin listen
-	//listen_thread_id = (pthread_t *)malloc(sizeof(pthread_t));
+	//listen_thread_id = (pthread_t *)malloc_safe(sizeof(pthread_t));
 	pthread_t listen_thread_id;
 	pthread_create(&listen_thread_id, NULL, listen_thread, 0);//begin listen thread
 
@@ -59,6 +60,7 @@ int input(){
 	setbuf(stdin, NULL);
 	fgets(inputbuf, INPUT_BUFSIZE, stdin);
 	setbuf(stdin, NULL);
+	printf("[inputbuf length]%ld\n",strlen(inputbuf)*sizeof(char));
 	char *friend_name = strtok(inputbuf, ":");
 	char *message = strtok(NULL, "\n");
 	//printf("[TEST EXIT] name %s message %s \n",friend_name, message);
@@ -85,9 +87,9 @@ int input(){
 	printf("%s", "\t<file>\n");
 	
 /*	if (friend_name != NULL)*/
-/*		free(friend_name);*/
+/*		free_safe(friend_name);*/
 /*	if (message != NULL)*/
-/*		free(message);*/
+/*		free_safe(message);*/
 	
 	return FALSE;	
 }
@@ -142,8 +144,7 @@ void send_file(char *friend_name, char *message){
 }
 
 void send_message(char *friend_name, char *message){
-	struct friend *this = (struct friend *)malloc(sizeof(struct friend));
-	memset(this, 0, sizeof(struct friend));
+	struct friend *this = (struct friend *)malloc_safe(this, sizeof(struct friend));
 	
 	int result = find_connector_by_name(&connectors, friend_name, this);//is connectted?
 	print_connector(&connectors);
@@ -192,7 +193,7 @@ void send_message(char *friend_name, char *message){
 		this->friend_socket_fd = friend_socket_fd;
 /*			this->state = TALK_RUNNING;*/
 /*			enqueue_connector(&connectors, this->friend_name, this->friend_thread_id, this->friend_socket_fd);*/
-/*			free(this->friend_name);*/
+/*			free_safe(this->friend_name);*/
 /*		}*/
 	}
 
@@ -204,7 +205,7 @@ void send_message(char *friend_name, char *message){
 /*	//TODO new dst = malloc(srclen+insertlen+1);memset()*/
 /*	//TODO dst = src+insert*/
 /*	//TODO callback(dst)*/
-/*	//TODO free(dst)*/
+/*	//TODO free_safe(dst)*/
 /*	*/
 /*	char *wrap_message = (char *)malloc(wrap_message_length * sizeof(char));*/
 /*	memset(wrap_message, 0, wrap_message_length * sizeof(char));*/
@@ -224,11 +225,10 @@ void send_message(char *friend_name, char *message){
 	
 	//TODO make a new function send_split(char *data) recv_split(LinkQueue *)
 	for (int i = 0; i <= wrap_message_length / SEND_BUFSIZE; i += 1) {
-		char *sendbuf = (char *)malloc((SEND_BUFSIZE + 1) * sizeof(char));
-		memset(sendbuf, 0, (SEND_BUFSIZE + 1) * sizeof(char));
+		char *sendbuf = (char *)malloc_safe(sendbuf, (SEND_BUFSIZE + 1) * sizeof(char));
 		strncpy(sendbuf, wrap_message + i * SEND_BUFSIZE, SEND_BUFSIZE);
 		send_result = send(this->friend_socket_fd, sendbuf, strlen(sendbuf), 0);
-		free(sendbuf);
+		free_safe(sendbuf);
 	}
 	free_safe(wrap_message);
 	
@@ -240,7 +240,7 @@ void send_message(char *friend_name, char *message){
 	show(friend_name, message, SHOW_DIRECTION_OUT);
 	
 	end:
-	free(this);
+	free_safe(this);
 	
 }
 
