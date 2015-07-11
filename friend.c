@@ -7,7 +7,7 @@ void init_friend_name_addr()
 	pthread_rwlock_init(&name_addr_rwlock, NULL);
 	FILE *friend_address_file;
 	friend_address_file = fopen(FRIEND_ADDRESS_FILE,"r");
-	InitQueue(&name_address, sizeof(struct friend_name_addr *), sizeof(struct friend_name_addr));
+	InitQueue(&name_address, sizeof(struct friend_name_addr));
 	char line_data[LINE_LENGTH] = {0};
 	while(fgets(line_data,LINE_LENGTH,friend_address_file) != NULL){
 		char *friend_name;
@@ -25,12 +25,9 @@ void init_friend_name_addr()
 void enqueue_friend_name_addr(LinkQueue *queue, char *friend_name,char *friend_address)
 {
 	struct friend_name_addr *fna;
-	fna = (struct friend_name_addr *)malloc(sizeof(struct friend_name_addr));
-	memset(fna, 0, sizeof(struct friend_name_addr));
-	fna->friend_name = (char *)malloc((strlen(friend_name) + 1) * sizeof(char));
-	fna->friend_address = (char *)malloc((strlen(friend_address) + 1) * sizeof(char));
-	memset(fna->friend_name, 0, strlen(friend_name) * sizeof(char));
-	memset(fna->friend_address, 0, strlen(friend_address) * sizeof(char));
+	fna = (struct friend_name_addr *)malloc_safe(fna, sizeof(struct friend_name_addr));
+	fna->friend_name = (char *)malloc_safe(fna->friend_name, (strlen(friend_name) + 1) * sizeof(char));
+	fna->friend_address = (char *)malloc_safe(fna->friend_address, (strlen(friend_address) + 1) * sizeof(char));
 	strcpy(fna->friend_name, friend_name);
 	strcpy(fna->friend_address, friend_address);
 	//printf("<begin wrlock 0>%d\n",__LINE__);;
@@ -38,14 +35,13 @@ void enqueue_friend_name_addr(LinkQueue *queue, char *friend_name,char *friend_a
 	EnQueue(queue, (void *)fna);
 	//printf("<end wrlock 0>\n");
 	pthread_rwlock_unlock(&name_addr_rwlock);
-	free(fna);	
+	free_safe(fna);	
 }
 
 void dequeue_friend_name_addr(LinkQueue *queue)
 {
 	struct friend_name_addr *fna;
-	fna = (struct friend_name_addr *)malloc(sizeof(struct friend_name_addr));	
-	memset(fna, 0, sizeof(struct friend_name_addr));
+	fna = (struct friend_name_addr *)malloc_safe(fna, sizeof(struct friend_name_addr));	
 	//printf("<begin wrlock 0>%d\n",__LINE__);;
 	pthread_rwlock_wrlock(&name_addr_rwlock);
 	//printf("<return wrlock 0>%d\n",a);;	
@@ -53,9 +49,9 @@ void dequeue_friend_name_addr(LinkQueue *queue)
 	//printf("[WILL DeQueue Return]\n");
 	pthread_rwlock_unlock(&name_addr_rwlock);
 	//printf("<end wrlock 0>\n");
-	free(fna->friend_name);
-	free(fna->friend_address);
-	free(fna);
+	free_safe(fna->friend_name);
+	free_safe(fna->friend_address);
+	free_safe(fna);
 }
 
 void destory_friend_name_addr(LinkQueue *queue)
@@ -137,11 +133,16 @@ int get_friend_name_length(LinkQueue *name_address_queue, char *friend_ip)
 /*	}*/
 /*}*/
 
-int init_connector()
+int init_connector(LinkQueue *friend_queue)
 {
 	//printf("<init wrlock 1>\n");
 	pthread_rwlock_init(&connector_rwlock, NULL);
-	return InitQueue(&connectors, sizeof(struct friend *), sizeof(struct friend));
+	int result = InitQueue(friend_queue, sizeof(struct friend));
+	printf("[connectors front]%p\n", friend_queue->front);
+	printf("[connectors rear]%p\n", friend_queue->rear);
+	printf("[connectors front->next]%p\n",friend_queue->front->next);
+	printf("[connectors rear->next]%p\n",friend_queue->rear->next);
+	return result;
 }
 
 /*int add_connector(LinkQueue *friend_queue, struct friend *friendinfo)*/
@@ -151,11 +152,8 @@ int init_connector()
 
 int enqueue_connector(LinkQueue *friend_queue, char *friend_name, pthread_t friend_thread_id, socket_fd friend_socket_fd)
 {
-	struct friend *connector;
-	connector = (struct friend *)malloc(sizeof(struct friend));
-	memset(connector, 0, sizeof(struct friend));
-	connector->friend_name = (char *)malloc((strlen(friend_name) + 1) * sizeof(char));
-	memset(connector->friend_name, 0, (strlen(friend_name) + 1) * sizeof(char));
+	struct friend *connector = (struct friend *)malloc_safe(connector, sizeof(struct friend));
+	connector->friend_name = (char *)malloc_safe(connector->friend_name, (strlen(friend_name) + 1) * sizeof(char));
 	strcpy(connector->friend_name, friend_name);
 	connector->friend_thread_id = friend_thread_id;
 	connector->friend_socket_fd = friend_socket_fd;
@@ -164,7 +162,11 @@ int enqueue_connector(LinkQueue *friend_queue, char *friend_name, pthread_t frie
 	int result = EnQueue(friend_queue, (void *)connector);
 	pthread_rwlock_unlock(&connector_rwlock);
 	//printf("<end wrlock 1>\n");
-	free(connector);
+	free_safe(connector);
+	printf("[connectors front]%p\n", friend_queue->front);
+	printf("[connectors rear]%p\n", friend_queue->rear);
+	printf("[connectors front->next]%p\n",friend_queue->front->next);
+	printf("[connectors rear->next]%p\n",friend_queue->rear->next);
 	return result;	
 }
 
@@ -181,9 +183,7 @@ int dequeue_connector_length(LinkQueue *friend_queue)
 
 int dequeue_connector(LinkQueue *friend_queue, struct friend *friend_val)
 {
-	struct friend *connector;
-	connector = (struct friend *)malloc(sizeof(struct friend));		
-	memset(connector, 0, sizeof(struct friend));
+	struct friend *connector = (struct friend *)malloc_safe(connector, sizeof(struct friend));		
 	//printf("<begin wrlock 1>\n");
 	pthread_rwlock_wrlock(&connector_rwlock);
 	int result = DeQueue(friend_queue, (void *)connector);
@@ -196,8 +196,8 @@ int dequeue_connector(LinkQueue *friend_queue, struct friend *friend_val)
 		friend_val->state = connector->state;
 		strcpy(friend_val->friend_name, connector->friend_name);
 	}
-	free(connector->friend_name);
-	free(connector);
+	free_safe(connector->friend_name);
+	free_safe(connector);
 	{
 	//printf("[in dequeue connector]\n");
 	//print_connector(friend_queue);
@@ -240,9 +240,7 @@ int find_connector_by_threadid(LinkQueue *friend_queue, pthread_t friend_thread_
 	//printf("<begin wrlock 1>\n");
 	pthread_rwlock_rdlock(&connector_rwlock);
 	QNode *p = friend_queue->front;
-	printf("[address]%p\n",p);
 	while((p = p->next)){
-	//printf("[address]%p\n",p);
 		if (!memcmp(&friend_thread_id, &((struct friend *)p->pointer)->friend_thread_id, sizeof(pthread_t))) {
 			if (friend_val != NULL)
 				memcpy(friend_val, p->pointer, sizeof(struct friend));
@@ -270,17 +268,24 @@ int remove_connector(LinkQueue *friend_queue, socket_fd talk_socket_fd)
 		//if (!strcmp(friend_name, ((struct friend *)p->pointer)->friend_name)) {
 		if (talk_socket_fd == ((struct friend *)p->pointer)->friend_socket_fd) {
 			before->next = p->next;
+			if (friend_queue->rear == p)
+				friend_queue->rear = friend_queue->front;
 			printf("[element for remove]%s\n",((struct friend *)p->pointer)->friend_name);
-			free(((struct friend *)p->pointer)->friend_name);
-			free(p->pointer);
-			free(p);
+			
+			free_safe(((struct friend *)p->pointer)->friend_name);
+			free_safe(p->pointer);
+			free_safe(p);
 			pthread_rwlock_unlock(&connector_rwlock);
 	//		printf("<end wrlock 1>\n");
 			
 			//if (friend_queue->front->next == NULL) {
-			if (friend_queue->rear == p)
-				friend_queue->rear = friend_queue->front;
+			
 			//print_connector(friend_queue);//TODO remove
+			
+			printf("[connectors front]%p\n", friend_queue->front);
+			printf("[connectors rear]%p\n", friend_queue->rear);
+			printf("[connectors front->next]%p\n",friend_queue->front->next);
+			printf("[connectors rear->next]%p\n",friend_queue->rear->next);
 			return OK;
 		}
 		before = p;
@@ -317,8 +322,8 @@ void close_all_connector(LinkQueue *friend_queue)
 /*		printf("[begin dequeue one connector]!!\n");*/
 /*		dequeue_connector(connectors, this);*/
 /*		close_talk_thread(this->friend_socket_fd, this->friend_name);*/
-/*		free(this->friend_name);*/
-/*		free(this);*/
+/*		free_safe(this->friend_name);*/
+/*		free_safe(this);*/
 /*	}*/
 	pthread_rwlock_rdlock(&connector_rwlock);
 	QNode *p = friend_queue->front;

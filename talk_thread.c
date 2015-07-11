@@ -18,14 +18,13 @@ void *talk_thread(void *arg)
 	char ip[16] = {0};
 	strcpy(ip, inet_ntoa(((struct sockaddr_in *)&addr)->sin_addr));
 	int friend_name_length = (get_friend_name_length(&name_address, ip) + 1) * sizeof(char);
-	char *friend_name = (char *)malloc(friend_name_length);
-	memset(friend_name, 0, friend_name_length);
+	char *friend_name = (char *)malloc_safe(friend_name, friend_name_length);
 	
 	get_friend_name(&name_address, ip, friend_name);
 	printf("[friendname]%s\n",friend_name);
 	//get friend_name
 	
-	
+	printf("[enqueue_connector threadid]%d\n",friend_thread_id);
 	enqueue_connector(&connectors, friend_name, friend_thread_id, talk_socket_fd);
 	//enqueue_connector
 	print_connector(&connectors);
@@ -121,7 +120,7 @@ void *talk_thread(void *arg)
 	//	callback(talk_listener_list[type,state],arg)
 	//}
 	Queue message_recv;
-	InitQueue(&message_recv, sizeof(char **), sizeof(char *));
+	InitQueue(&message_recv, sizeof(char *));
 	
 	
 	while (!state && !client_shutdown) {
@@ -129,9 +128,9 @@ void *talk_thread(void *arg)
 		int recv_end = 0;
 			
 		do {	
-			char *recvbuf = (char *)malloc((RECV_BUFSIZE + 1) * sizeof(char));
 			printf("[---------malloc---------]\n");
-			memset(recvbuf, 0, (RECV_BUFSIZE + 1) * sizeof(char));
+			char *recvbuf = (char *)malloc_safe(recvbuf, (RECV_BUFSIZE + 1) * sizeof(char));
+			//memset(recvbuf, 0, (RECV_BUFSIZE + 1) * sizeof(char));
 			printf("[begin recv]\n");
 			recv_result = recv(talk_socket_fd, recvbuf, RECV_BUFSIZE - 1, 0);
 			printf("[recv result]%d\n",recv_result);
@@ -159,7 +158,7 @@ void *talk_thread(void *arg)
 
 	
 		int queue_length_max = QueueLength(&message_recv);
-		char *message = (char *)malloc(RECV_BUFSIZE * sizeof(char) * (queue_length_max + 1));
+		char *message = (char *)malloc_safe(message, RECV_BUFSIZE * sizeof(char) * (queue_length_max + 1));
 		memset(message, 0, RECV_BUFSIZE * sizeof(char) * (queue_length_max + 1));
 		recombine_message(&message_recv, message);
 	
@@ -173,7 +172,7 @@ void *talk_thread(void *arg)
 			printf("[message]%s\n[length]%d\n",message,strlen(message));
 			show(friend_name, message, SHOW_DIRECTION_IN);
 		}
-		free(message);
+		free_safe(message);
 		
 		
 		
@@ -185,7 +184,7 @@ void *talk_thread(void *arg)
 	while (QueueLength(&message_recv)) {//prevent malloc without free
 		char *recvbuf;
 		DeQueue(&message_recv, &recvbuf);
-		free(recvbuf);
+		free_safe(recvbuf);
 		//printf("[---------freeend---------]\n");
 	}
 	DestoryQueue(&message_recv);
@@ -195,15 +194,15 @@ void *talk_thread(void *arg)
 /*	printf("[need to be remove]%s\n",friend_name);*/
 	
 /*	remove_connector(&connectors, friend_name);*/
-	printf("[begin find_connector]\n");
-	printf("[connectors next]%p %p",connectors,(&connectors)->front);
+	printf("[begin find_connector by threadid]%d\n",friend_thread_id);
+	printf("[connectors next]%p %p\n",connectors,(&connectors)->front);
 	if (!find_connector_by_threadid(&connectors, friend_thread_id, NULL)) {
 		printf("[need to be remove]%s sockfd=%d\n",friend_name,talk_socket_fd);
 		remove_connector(&connectors, talk_socket_fd);
 	}
 	close_connector(talk_socket_fd);
-/*	free(this);*/
-	free(friend_name);
+/*	free_safe(this);*/
+	free_safe(friend_name);
 	pthread_exit((void *)NULL);
 	//return (void *)NULL;
 }
@@ -227,7 +226,7 @@ void recombine_message(LinkQueue *recv_queue,char *message)
 		printf("[combine message]%s\n",message);
 		
 		printf("[combine message_length]%d\n",strlen(message));
-		free(recvbuf);
+		free_safe(recvbuf);
 		//printf("[---------freein---------]\n");
 		queue_length = QueueLength(recv_queue);
 	} //recombine all data to message

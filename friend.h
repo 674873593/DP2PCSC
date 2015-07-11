@@ -5,6 +5,7 @@
 	#include "socket.h"
 	#include <pthread.h>
 	#include <stdio.h>
+	#include <unistd.h>
 	
 	
 	#define FRIEND_ADDRESS_FILE "friend_address"
