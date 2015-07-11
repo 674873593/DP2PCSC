@@ -121,8 +121,7 @@ void *talk_thread(void *arg)
 	//}
 	
 	Queue *data_recv = init_data_recv();
-	if(recv_data(talk_socket_fd, data_recv) == FALSE)
-		goto end;
+	
 	//destory_data_recv(data_recv);
 	
 /*	Queue message_recv;*/
@@ -173,7 +172,8 @@ void *talk_thread(void *arg)
 /*		char *message = (char *)malloc_safe(message, RECV_BUFSIZE * sizeof(char) * (queue_length_max + 1));*/
 
 /*		recombine_message(&message_recv, message);*/
-	
+		if(recv_data(talk_socket_fd, data_recv) == FALSE)
+			goto end;
 		char *data = init_data_recombine(data_recv);
 		recombine_data(data_recv, data);
 		
@@ -299,21 +299,22 @@ void recombine_data(LinkQueue *data_recv,char *data)
 	while (queue_length > 0) {
 		char *recvbuf;
 		DeQueue(data_recv, &recvbuf);
-		printf("[combine recvbuf]%s\n",recvbuf);
-		printf("[combine recvbuflength]%d\n",strlen(recvbuf));
-		printf("[combine message before]%s\n",data);
-		printf("[combine message start length]%d\n",(RECV_BUFSIZE - 1) * (queue_length_max - queue_length));
+/*		printf("[combine recvbuf]%s\n",recvbuf);*/
+/*		printf("[combine recvbuflength]%d\n",strlen(recvbuf));*/
+/*		printf("[combine message before]%s\n",data);*/
+/*		printf("[combine message start length]%d\n",(RECV_BUFSIZE - 1) * (queue_length_max - queue_length));*/
 		if (data != NULL){
 			memcpy(data + data_length, recvbuf, strlen(recvbuf));
 			data_length += strlen(recvbuf);
 		}
-		printf("[combine message]%s\n",data);
-		
-		printf("[combine message_length]%d\n",strlen(data));
+/*		printf("[combine message]%s\n",data);*/
+/*		*/
+/*		printf("[combine message_length]%d\n",strlen(data));*/
 		free_safe(recvbuf);
 		//printf("[---------freein---------]\n");
 		queue_length = QueueLength(data_recv);
 	} //recombine all data to message
+	printf("[combine message finally]%s\n",data);
 }
 
 void destory_data_recombine(char *data)

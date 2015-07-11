@@ -12,7 +12,7 @@
 	#define SERVER_PORT 12345
 	#define RECV_BUFSIZE 10
 	#define SEND_BUFSIZE RECV_BUFSIZE
-	#define INPUT_BUFSIZE 1024*1024*8
+	#define INPUT_BUFSIZE 1024*4
 	#define LISTEN_LIST_LENGTH 20
 	
 	#define SOH '\x1'	//start of headline

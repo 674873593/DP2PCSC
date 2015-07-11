@@ -75,7 +75,6 @@ void *show_thread(void *arg)
 		int is_tty_reboot = 0;
 		is_tty_reboot = system("bash show_tty_daemon.sh isalive");
 		if (is_tty_reboot) {//if a new tty created and olds are killed
-			printf("[new tty create and refresh]\n");
 			refresh_show_tty();
 		}
 		sleep(1);

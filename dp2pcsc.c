@@ -60,6 +60,7 @@ int input(){
 	setbuf(stdin, NULL);
 	fgets(inputbuf, INPUT_BUFSIZE, stdin);
 	setbuf(stdin, NULL);
+	printf("[inputbuf length]%ld\n",strlen(inputbuf)*sizeof(char));
 	char *friend_name = strtok(inputbuf, ":");
 	char *message = strtok(NULL, "\n");
 	//printf("[TEST EXIT] name %s message %s \n",friend_name, message);
