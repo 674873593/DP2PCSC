@@ -30,5 +30,5 @@
 	void init_show();
 	void *show_thread(void *arg);
 	void refresh_show_tty();
-	void destory_show_tty();
+	void destroy_show_tty();
 #endif /* __show_thread_H__ */ 

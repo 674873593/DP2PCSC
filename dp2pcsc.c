@@ -20,15 +20,15 @@ int main (int argc, char *argv[])
 	shutdown(listen_socket_fd, SHUT_RDWR);
 	close(listen_socket_fd);
 	printf("here!!\n");
-	destory_friend_name_addr(&name_address);
+	destroy_friend_name_addr(&name_address);
 	printf("there!\n");
 	close_all_connector(&connectors);//talk_thread can't be closed by themself because recv is blocking
 	while (connector_length(&connectors)){
 		printf("[Connectors Length]%d\n",connector_length(&connectors));
 		usleep(50);
 	}
-	destory_connector(&connectors);
-	destory_show_tty();
+	destroy_connector(&connectors);
+	destroy_show_tty();
 	sleep(1);//wait for other thread exit,not necssary but that can make it easy for valbrind check memory leak (include still reachable)
 	return 0;
 }//end main-function
@@ -146,7 +146,7 @@ void send_file(char *friend_name, char *message){
 void send_message(char *friend_name, char *message){
 	struct friend *this = (struct friend *)malloc_safe(this, sizeof(struct friend));
 	
-	int result = find_connector_by_name(&connectors, friend_name, this);//is connectted?
+	int result = find_connector_by_name(&connectors, friend_name, this, MESSAGE_CONNECT);//is connectted?
 	print_connector(&connectors);
 	printf("findresult  %d \n", result);
 	if (result) {//TODO new function  make new connect & create talk_thread
@@ -181,8 +181,13 @@ void send_message(char *friend_name, char *message){
 		
 		
 		pthread_t talk_thread_id;
+		struct talk_thread_arg tt_arg;
+		(&tt_arg)->connect_socket_fd = friend_socket_fd;
+		(&tt_arg)->connect_launcher = TRUE;
+		(&tt_arg)->connect_type = MESSAGE_CONNECT;
+		(&tt_arg)->append = NULL;
 		//memset(&talk_thread_id, 0, sizeof(pthread_t));
-		pthread_create(&talk_thread_id, NULL, talk_thread, (void *)&friend_socket_fd);
+		pthread_create(&talk_thread_id, NULL, talk_thread, (void *)&tt_arg);
 		//pthread_detach(talk_thread_id);
 /*		{//TODO maybe move to talk_thread.c*/
 		//enqueue_connector
@@ -191,6 +196,13 @@ void send_message(char *friend_name, char *message){
 /*			memcpy(friend_name, this->friend_name, strlen(friend_name));*/
 /*			this->friend_thread_id = talk_thread_id;*/
 		this->friend_socket_fd = friend_socket_fd;
+		//send head control data 
+	
+		send_wrap_split_data(this->friend_socket_fd, MESSAGE_CONNECT_STR, ETB);
+		printf("[send head control data]connect type = %s\n",MESSAGE_CONNECT_STR);
+		//recv head control ACK
+		if (recv_equal_char(this->friend_socket_fd, ACK) == FALSE) goto end;
+		printf("[recv_ACK]\n");
 /*			this->state = TALK_RUNNING;*/
 /*			enqueue_connector(&connectors, this->friend_name, this->friend_thread_id, this->friend_socket_fd);*/
 /*			free_safe(this->friend_name);*/
@@ -211,32 +223,30 @@ void send_message(char *friend_name, char *message){
 /*	memset(wrap_message, 0, wrap_message_length * sizeof(char));*/
 /*	strncpy(wrap_message, message, message_length);*/
 /*	strncpy((wrap_message + message_length), "\x4", 1);*/
-	int wrap_message_length = strlen(message) + 2;
-	char *wrap_message = (char *)malloc_safe(wrap_message, wrap_message_length);
-	wrap(message, ETB, wrap_message);
-	printf("[wrap]%s\n",wrap_message);
-	printf("[message]%s\n",message);
-	//int input_length = strlen(message);
-	//send_message & show in local tty
-	printf("[begin send]\n");
-	printf("[INPUTSIZE]%d",strlen(wrap_message));
-	printf("[this->fd]%d\n",this->friend_socket_fd);
-	int send_result;
+/*	int wrap_message_length = strlen(message) + 2;*/
+/*	char *wrap_message = (char *)malloc_safe(wrap_message, wrap_message_length);*/
+/*	wrap(message, ETB, wrap_message);*/
+/*	printf("[wrap]%s\n",wrap_message);*/
+/*	printf("[message]%s\n",message);*/
+/*	//int input_length = strlen(message);*/
+/*	//send_message & show in local tty*/
+/*	printf("[begin send]\n");*/
+/*	printf("[INPUTSIZE]%d",strlen(wrap_message));*/
+/*	printf("[this->fd]%d\n",this->friend_socket_fd);*/
+/*	int send_result;*/
+/*	*/
+/*	//TODO make a new function send_split(char *data) recv_split(LinkQueue *)*/
+/*	for (int i = 0; i <= wrap_message_length / SEND_BUFSIZE; i += 1) {*/
+/*		char *sendbuf = (char *)malloc_safe(sendbuf, (SEND_BUFSIZE + 1) * sizeof(char));*/
+/*		strncpy(sendbuf, wrap_message + i * SEND_BUFSIZE, SEND_BUFSIZE);*/
+/*		send_result = send(this->friend_socket_fd, sendbuf, strlen(sendbuf), 0);*/
+/*		free_safe(sendbuf);*/
+/*	}*/
+/*	free_safe(wrap_message);*/
+/*	*/
 	
-	//TODO make a new function send_split(char *data) recv_split(LinkQueue *)
-	for (int i = 0; i <= wrap_message_length / SEND_BUFSIZE; i += 1) {
-		char *sendbuf = (char *)malloc_safe(sendbuf, (SEND_BUFSIZE + 1) * sizeof(char));
-		strncpy(sendbuf, wrap_message + i * SEND_BUFSIZE, SEND_BUFSIZE);
-		send_result = send(this->friend_socket_fd, sendbuf, strlen(sendbuf), 0);
-		free_safe(sendbuf);
-	}
-	free_safe(wrap_message);
-	
-	//TODO end
-	
-	
-	
-	printf("[send result]%d\n",send_result);
+	send_wrap_split_data(this->friend_socket_fd, message, ETB);
+	printf("[send data end]\n");
 	show(friend_name, message, SHOW_DIRECTION_OUT);
 	
 	end:
@@ -244,5 +254,24 @@ void send_message(char *friend_name, char *message){
 	
 }
 
+void send_wrap_split_data(socket_fd send_socket_fd, char *data, char tail)
+{
+	int wrap_data_length = strlen(data) + 2;
+	char *wrap_data = (char *)malloc_safe(wrap_data, wrap_data_length);
+	wrap(data, tail, wrap_data);
+	send_split_data(send_socket_fd, wrap_data);
+	free_safe(wrap_data);
+	
+}
 
+void send_split_data(socket_fd send_socket_fd, char *send_data)
+{
+	int send_data_length = strlen(send_data) + 1;
+	for (int i = 0; i <= send_data_length / SEND_BUFSIZE; i += 1) {
+		char *sendbuf = (char *)malloc_safe(sendbuf, (SEND_BUFSIZE + 1) * sizeof(char));
+		strncpy(sendbuf, send_data + i * SEND_BUFSIZE, SEND_BUFSIZE);
+		send(send_socket_fd, sendbuf, strlen(sendbuf), 0);
+		free_safe(sendbuf);
+	}
+}
 
