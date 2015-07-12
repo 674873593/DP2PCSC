@@ -40,6 +40,9 @@
 	#define FALSE 1
 	#endif
 	
+//	#define ONINIT 0
+//	#define ONRUN 1
+//	#define ONDESTROY 2
 	
 	int wrap(const char *from, const char tail,char *to);
 	int un_wrap(char *str, char *tail);

@@ -14,7 +14,11 @@ void *listen_thread(void *arg)
 		if (talk_socket_fd > 2) {//0 stdin; 1 stdout; 2 stderr
 			pthread_t talk_thread_id;
 		//	printf("[LISTEN___LISTEN]\n");
-			pthread_create(&talk_thread_id, NULL, talk_thread, (void *)&talk_socket_fd);
+			struct talk_thread_arg tt_arg;
+			(&tt_arg)->connect_socket_fd = talk_socket_fd;
+			(&tt_arg)->connect_launcher = FALSE;
+			(&tt_arg)->append = NULL;
+			pthread_create(&talk_thread_id, NULL, talk_thread, (void *)&tt_arg);
 			//pthread_detach(talk_thread_id);
 		}else{
 			usleep(500);

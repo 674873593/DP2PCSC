@@ -29,6 +29,6 @@
 	int InitQueue(LinkQueue *Q, size_t value_size);
 	int EnQueue(LinkQueue *Q, void* pointer);
 	int DeQueue(LinkQueue *Q, void* pointer);
-	int DestoryQueue(LinkQueue *Q);
+	int DestroyQueue(LinkQueue *Q);
 	int QueueLength(LinkQueue *Q);
 #endif /* __Queue_H__ */ 

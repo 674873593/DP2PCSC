@@ -24,4 +24,15 @@
 	#define ETB '\x17'	//end of trans. block
 	#define CAN '\x18'	//cancel
 	
+	#define ACK_STR "\x06\x17"
+	#define EOT_STR "\x04\x17"
+	#define CAN_STR "\x18\x17"
+	
+		//connect type
+	#define MESSAGE_CONNECT 0
+	#define MESSAGE_CONNECT_STR "0"
+	#define FILE_CONNECT 1
+	#define FILE_CONNECT_STR "1"
+
+	
 #endif /* __socket_H__ */ 

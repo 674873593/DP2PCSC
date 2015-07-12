@@ -36,7 +36,7 @@ int DeQueue(LinkQueue *Q, void *pointer){
 	return OK;
 }
 
-int DestoryQueue(LinkQueue *Q){
+int DestroyQueue(LinkQueue *Q){
 	while (Q->front){
 		Q->rear = Q->front->next;
 		free_safe(Q->front->pointer);//TODO 新增代码未测试

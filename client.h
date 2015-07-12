@@ -31,6 +31,7 @@
 	int file_mode();
 	void send_file(char *friend_name, char *file_location);
 	void send_message(char *friend_name, char *message);
-	
+	void send_wrap_split_data(socket_fd send_socket_fd, char *data, char tail);
+	void send_split_data(socket_fd send_socket_fd, char *send_data);
 #endif /* __client_H__ */ 
 	

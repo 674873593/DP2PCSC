@@ -59,8 +59,8 @@ void refresh_show_tty()
     	
     	show_tty_running->show_tty_pid = atoi(show_tty_pidbuf);
     	memset(show_tty_running->show_tty_name, 0, SHOW_TTY_NAME_BUFSIZE);
-    	memcpy(show_tty_running->show_tty_name, show_tty_name,(strlen(show_tty_name) + 1) * sizeof(char));
-
+    //	memcpy(show_tty_running->show_tty_name, show_tty_name,(strlen(show_tty_name) + 1) * sizeof(char));
+	memcpy(show_tty_running->show_tty_name, show_tty_name,strlen(show_tty_name) * sizeof(char));
 /*    	pthread_mutex_unlock(&lock);*/
     	free_safe(show_tty_pidbuf);
     	free_safe(show_tty_name);
@@ -86,7 +86,7 @@ void *show_thread(void *arg)
 	pthread_exit((void *)NULL);
 }
 
-void destory_show_tty()
+void destroy_show_tty()
 {
 	free_safe(show_tty_running->show_tty_name);
 	free_safe(show_tty_running);
