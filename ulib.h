@@ -54,4 +54,5 @@
 	int wrap(const char *from, const char tail,char *to);
 	int un_wrap(char *str, char *tail);
 	int compare_wrap(const char *str,char tail);
+	char *long_to_string(long number);
 #endif /* __ulib_H__ */ 

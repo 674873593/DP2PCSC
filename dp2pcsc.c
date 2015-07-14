@@ -159,7 +159,7 @@ void send_file(char *friend_name, char *file_location){
 		if (friend_socket_fd <= 2) 
 			goto end;
 		//register file_trans to file_trans_control
-		file_trans_fd = init_file_trans(file_trans_control, TRUE, file_name, file_location, NULL);
+		file_trans_fd = init_file_trans(file_trans_control, TRUE, file_name, file_location, 0);
 		
 		
 		//create thread

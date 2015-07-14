@@ -151,6 +151,7 @@ void *talk_thread(void *arg)
 		//recv head control ACK
 		if (recv_equal_char(talk_socket_fd, ACK) == FALSE) goto end;
 		printf("[recv_ACK]\n");
+		
 	}
 	
 	
@@ -263,15 +264,22 @@ struct connect_info *init_download(socket_fd talk_socket_fd, char *friend_name, 
 		printf("[file_name data] send ACK\n");
 		send(talk_socket_fd, ACK_STR, strlen(ACK_STR), 0);
 		
+		if (recv_unwrap_split_data(talk_socket_fd, data_recv, NULL) == FALSE) return NULL;
+		char *total_size_str = init_data_recombine(data_recv);
+		recombine_data(data_recv, total_size_str);
+		printf("[file_name data] send ACK\n");
+		send(talk_socket_fd, ACK_STR, strlen(ACK_STR), 0);
+		long total_size = atol(total_size_str);
 /*		if (recv_unwrap_split_data(talk_socket_fd, data_recv, NULL) == FALSE) return NULL;*/
 /*		char *md5 = init_data_recombine(data_recv);*/
 /*		recombine_data(data_recv, md5);*/
 /*		printf("[md5 data] send ACK\n");*/
 /*		send(talk_socket_fd, ACK_STR, strlen(ACK_STR), 0);*/
 /*		task = find_file_trans_task(file_trans_control, init_file_trans(file_trans_control, FALSE, file_name, NULL, md5));*/
-		file_trans_fd = init_file_trans(file_trans_control, FALSE, file_name, NULL);
+		file_trans_fd = init_file_trans(file_trans_control, FALSE, file_name, NULL, total_size);
 		task = find_file_trans_task(file_trans_control, file_trans_fd);
 		destroy_data_recombine(file_name);
+		destroy_data_recombine(total_size_str);
 /*		destroy_data_recombine(md5);*/
 		
 	}else{//Launcher send file_name
@@ -283,6 +291,15 @@ struct connect_info *init_download(socket_fd talk_socket_fd, char *friend_name, 
 		if (recv_equal_char(talk_socket_fd, ACK) == FALSE) return NULL;
 		printf("[recv ACK]\n");
 		
+		char *send_total_size_str = long_to_string(task->total_size);
+		
+		send_wrap_split_data(talk_socket_fd, send_total_size_str, ETB);
+		printf("[send total_size data] %s\n",send_total_size_str);
+		//recv head control ACK
+		if (recv_equal_char(talk_socket_fd, ACK) == FALSE) return NULL;
+		printf("[recv ACK]\n");
+		
+		free_safe(send_total_size_str);
 /*		send_wrap_split_data(talk_socket_fd, task->md5, ETB);*/
 /*		printf("[send md5 data] %s\n",task->md5);*/
 /*		//recv head control ACK*/
@@ -309,9 +326,10 @@ void download_file(struct connect_info *cinfo)
 	int result;
 	if(task->connect_launcher == TRUE){//Launcher read send
 		while (task->fin_size < task->total_size && !client_shutdown){
+			//printf("[fin_size total_size]%d %d\n",task->fin_size,task->total_size);
 			read_file_trans_block(file_trans_control, cinfo->file_trans_fd, block_buff);
 			result = send_file_trans_block(file_trans_control, cinfo->file_trans_fd, cinfo->connect_socket_fd, block_buff);
-			if (result <= 0 && !(errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)) break;
+			if (result == -1) break;
 			memset(block_buff, 0, BLOCK_SIZE);
 		}
 			
@@ -319,7 +337,7 @@ void download_file(struct connect_info *cinfo)
 		while (task->fin_size < task->total_size && !client_shutdown){
 			memset(block_buff, 0, BLOCK_SIZE);
 			result = recv_file_trans_block(file_trans_control, cinfo->file_trans_fd, cinfo->connect_socket_fd, block_buff);
-			if (result <= 0 && !(errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)) break;
+			if (result < 0 && !(errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)) break;
 			append_file_trans_block(file_trans_control, cinfo->file_trans_fd, block_buff, BLOCK_SIZE);
 		}
 		
