@@ -26,8 +26,8 @@ void enqueue_friend_name_addr(LinkQueue *queue, char *friend_name,char *friend_a
 {
 	struct friend_name_addr *fna;
 	fna = (struct friend_name_addr *)malloc_safe(fna, sizeof(struct friend_name_addr));
-	fna->friend_name = (char *)malloc_safe(fna->friend_name, (strlen(friend_name) + 1) * sizeof(char));
-	fna->friend_address = (char *)malloc_safe(fna->friend_address, (strlen(friend_address) + 1) * sizeof(char));
+	fna->friend_name = (char *)malloc_string_safe(fna->friend_name, strlen(friend_name) * sizeof(char));
+	fna->friend_address = (char *)malloc_string_safe(fna->friend_address, strlen(friend_address) * sizeof(char));
 	strcpy(fna->friend_name, friend_name);
 	strcpy(fna->friend_address, friend_address);
 	//printf("<begin wrlock 0>%d\n",__LINE__);;
@@ -153,7 +153,7 @@ int init_connector(LinkQueue *friend_queue)
 int enqueue_connector(LinkQueue *friend_queue, char *friend_name, pthread_t friend_thread_id, socket_fd friend_socket_fd, int connect_type)
 {
 	struct friend *connector = (struct friend *)malloc_safe(connector, sizeof(struct friend));
-	connector->friend_name = (char *)malloc_safe(connector->friend_name, (strlen(friend_name) + 1) * sizeof(char));
+	connector->friend_name = (char *)malloc_string_safe(connector->friend_name, strlen(friend_name) * sizeof(char));
 	strcpy(connector->friend_name, friend_name);
 	connector->friend_thread_id = friend_thread_id;
 	connector->friend_socket_fd = friend_socket_fd;

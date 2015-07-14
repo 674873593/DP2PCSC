@@ -18,7 +18,7 @@
 		struct QNode *next;
 		void* pointer;//指向
 	}QNode,*QueuePtr;
-	
+
 	typedef struct{
 		QueuePtr front;//队头指针
 		QueuePtr rear;//队尾指针

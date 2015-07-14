@@ -10,40 +10,31 @@
 	#include "friend.h"
 	#include "socket.h"
 	#include "show_thread.h"
+	#include "file_trans.h"
 	
 	
 	
 	extern Queue name_address;
 	extern int client_shutdown;
 	extern Queue connectors;
+	extern Queue *file_trans_control;
 	
 	struct talk_thread_arg{
 		socket_fd connect_socket_fd;
 		int connect_launcher;//TRUE is launcher;FALSE is the accpeter
 		int connect_type;//MESSAGE_CONNECT FILE_CONNECT
-		void *append;//points to filename or other args may be need in furture
+		int file_trans_fd;
 	};
 	
-//	struct talk_control_arg{
-//		socket_fd connect_socket_fd;
-//		void *pointer;
-//	};
-	
-//	typedef int (*connect_ptr)(void *arg);
-	
-//	struct message_connect_arg{
-//		socket_fd connect_socket_fd;
-//		char *friend_name;
-//	};
 	
 	struct connect_info{
 		socket_fd connect_socket_fd;
 		char *friend_name;
-		char *file_name;
-		int connect_launcher;
 		Queue *data_recv;
-		FILE *file_ptr;
+		int file_trans_fd;	
 	};
+	
+
 	
 	void *talk_thread(void *arg);
 	//void recombine_message(LinkQueue *recv_queue,char *message);
@@ -54,7 +45,7 @@
 	void show_message(struct connect_info *cinfo);
 	void destroy_message(struct connect_info *cinfo);
 	
-	struct connect_info *init_download(socket_fd talk_socket_fd, char *friend_name, Queue *data_recv, char *file_name, int connect_launcher);
+	struct connect_info *init_download(socket_fd talk_socket_fd, char *friend_name, Queue *data_recv, int file_trans_fd);
 	void download_file(struct connect_info *cinfo);
 	void destroy_download(struct connect_info *cinfo);
 	

@@ -28,8 +28,12 @@
 		malloc(size);\
 		memset(pointer, 0, size)
 	
+	#define malloc_string_safe(pointer, size)\
+		malloc(size + 1 * sizeof(char));\
+		memset(pointer, 0, size + 1 * sizeof(char))
+	
 	#define free_safe(pointer) \
-		free(pointer);\
+		if (pointer != NULL) free(pointer);\
 		pointer = NULL;
 	
 	#ifndef TRUE
@@ -40,6 +44,9 @@
 	#define FALSE 1
 	#endif
 	
+	#ifndef ERROR
+	#define ERROR -1
+	#endif
 //	#define ONINIT 0
 //	#define ONRUN 1
 //	#define ONDESTROY 2
