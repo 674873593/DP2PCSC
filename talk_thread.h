@@ -37,8 +37,6 @@
 
 	
 	void *talk_thread(void *arg);
-	//void recombine_message(LinkQueue *recv_queue,char *message);
-	
 	int recv_equal_char(socket_fd recv_socket_fd,char ch);
 	
 	struct connect_info *init_message(socket_fd talk_socket_fd, char *friend_name, Queue *data_recv);

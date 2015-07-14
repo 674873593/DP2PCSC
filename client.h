@@ -1,17 +1,11 @@
 #ifndef __client_H__
-	#define __client_H__
-	
-	
-	#include <pthread.h>
-	
+	#define __client_H__	
+	#include <pthread.h>	
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include <sys/types.h>
 	#include <dirent.h>
-	
-	
-
-	
+		
 	#include "socket.h"
 	#include "Queue.h"
 	#include "friend.h"

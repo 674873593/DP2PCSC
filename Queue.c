@@ -5,7 +5,6 @@ int InitQueue(LinkQueue *Q, size_t value_size){
 	Q->front->pointer = (void*)malloc_safe(Q->front->pointer, value_size);
 	
 	if(!Q->front)return ERROR;
-	//Q->ptr_size=ptr_size;
 	Q->value_size=value_size;
 	Q->front->next=NULL;
 	return OK;
@@ -27,7 +26,7 @@ int DeQueue(LinkQueue *Q, void *pointer){
 	QNode *p;
 	if(Q->front==Q->rear){return ERROR;}
 	p=Q->front->next;
-	memcpy(pointer,p->pointer,Q->value_size);//*e=p->data;拷贝值
+	memcpy(pointer,p->pointer,Q->value_size);//pointer=p->pointer;
 	Q->front->next=p->next;
 	if(Q->rear==p)
 		Q->rear=Q->front;
@@ -39,7 +38,7 @@ int DeQueue(LinkQueue *Q, void *pointer){
 int DestroyQueue(LinkQueue *Q){
 	while (Q->front){
 		Q->rear = Q->front->next;
-		free_safe(Q->front->pointer);//TODO 新增代码未测试
+		free_safe(Q->front->pointer);
 		free_safe(Q->front);
 		Q->front=Q->rear;
 	}//end while
@@ -47,12 +46,10 @@ int DestroyQueue(LinkQueue *Q){
 }
 
 int QueueLength(LinkQueue *Q){
-	//printf("[Queuelength Called]\n");
 	QNode *p=Q->front;
 	int length=0;
 	while((p = p->next)){
 		length++;
 	}
-	//printf("[QueueLength] %d\n",length);
 	return length;
 }

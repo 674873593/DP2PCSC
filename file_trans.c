@@ -59,23 +59,16 @@ int init_file_trans(Queue *file_trans_control, int connect_launcher, char *file_
 /*		task->md5 = init_md5(file_location);*/
 /*		printf("[md5]%s\n",task->md5);*/
 		task->file_ptr = fopen(file_location, "rb");
-		printf("[openfile]%s\n",file_location);
 		fseek(task->file_ptr, 0, SEEK_END);
 		task->total_size = ftell(task->file_ptr);
-		printf("[total_size]%ld\n",task->total_size);
 		fseek(task->file_ptr, 0, SEEK_SET);
 	}else{//receiver
 		task->file_location = (char *)malloc_string_safe(task->file_location, (strlen(DOWNLOAD_PATH) + strlen(file_name)) * sizeof(char));
 		
 		strncpy(task->file_location, DOWNLOAD_PATH, strlen(DOWNLOAD_PATH));
 		strncpy(task->file_location + strlen(DOWNLOAD_PATH), file_name, strlen(file_name));
-		printf("[store location]%s\n",task->file_location);
-/*		task->md5 = (char *)malloc_string_safe(task->md5, strlen(md5) * sizeof(char));*/
-/*		strncpy(task->md5, md5, strlen(md5));*/
 		task->file_ptr = fopen(task->file_location, "wb");
-		printf("[openfile]%s\n",task->file_location);
 		task->total_size = total_size;
-		printf("[total_size]%ld\n",task->total_size);
 	}
 
 	//init total_size 	
@@ -118,7 +111,6 @@ void destroy_file_trans(Queue *file_trans_control, int file_trans_fd)
 				
 			free_safe(task->file_name);
 			free_safe(task->file_location);
-/*			destroy_md5(task->md5);*/
 			fclose(task->file_ptr);
 			free_safe(p->pointer);
 			free_safe(p);
@@ -131,99 +123,3 @@ void destroy_file_trans(Queue *file_trans_control, int file_trans_fd)
 	return;
 }
 
-
-int read_file_trans_block(Queue *file_trans_control, int file_trans_fd, unsigned char *file_block)
-{
-	int block_read_length = 0;
-	struct file_trans *task = find_file_trans_task(file_trans_control, file_trans_fd);
-	pthread_rwlock_wrlock(&file_trans_control_rwlock);
-	if (task != NULL) {
-		fseek(task->file_ptr, task->fin_size, SEEK_SET);
-		block_read_length = fread(file_block, sizeof(unsigned char), BLOCK_SIZE, task->file_ptr);
-	}
-/*	for (int i = 0; i < BLOCK_SIZE; i += 1) {*/
-/*		printf("%02x ",file_block[i]);*/
-/*	}//end for*/
-/*	printf("\n");*/
-	pthread_rwlock_unlock(&file_trans_control_rwlock);
-	return block_read_length;
-}
-
-void append_file_trans_block(Queue *file_trans_control, int file_trans_fd, unsigned char *block, int write_size)
-{
-	struct file_trans *task = find_file_trans_task(file_trans_control, file_trans_fd);
-	pthread_rwlock_wrlock(&file_trans_control_rwlock);
-	if (task != NULL) {
-		fseek(task->file_ptr, task->fin_size, SEEK_SET);
-		int append_length = fwrite(block, sizeof(unsigned char), write_size, task->file_ptr);
-		task->fin_size += append_length;
-		pthread_rwlock_unlock(&file_trans_control_rwlock);
-	}
-	pthread_rwlock_unlock(&file_trans_control_rwlock);
-}
-
-int send_file_trans_block(Queue *file_trans_control, int file_trans_fd, socket_fd connect_socket_fd, unsigned char *file_block)
-{
-	int send_result;
-	int block_send_length = 0;
-	struct file_trans *task = find_file_trans_task(file_trans_control, file_trans_fd);
-	pthread_rwlock_wrlock(&file_trans_control_rwlock);
-/*	for (int i = 0; i < BLOCK_SIZE; i += 1) {*/
-/*		printf("%02x",file_block[i]);*/
-/*	}//end for*/
-/*	printf("\n");*/
-	while (block_send_length < BLOCK_SIZE && client_shutdown != TRUE) {
-		send_result = send(connect_socket_fd, file_block + block_send_length, BLOCK_SIZE - block_send_length,0);
-		printf("[send bloack send_result]%d\n",send_result);
-		if (send_result == -1 || send_result == 0) {
-			break;
-		}
-		block_send_length += send_result;
-		task->fin_size += send_result;
-	}//end while
-	pthread_rwlock_unlock(&file_trans_control_rwlock);
-	return send_result;
-}
-
-int recv_file_trans_block(Queue *file_trans_control, int file_trans_fd, socket_fd connect_socket_fd, unsigned char *file_block)
-{
-	int recv_result;
-	int block_recv_length = 0;
-	struct file_trans *task = find_file_trans_task(file_trans_control, file_trans_fd);
-	pthread_rwlock_wrlock(&file_trans_control_rwlock);
-	while (block_recv_length < BLOCK_SIZE && client_shutdown != TRUE) {
-		
-		recv_result = recv(connect_socket_fd, file_block + block_recv_length, BLOCK_SIZE - block_recv_length, 0);
-		printf("[recv bloack recv_result]%d\n",recv_result);
-		if (recv_result <= 0 && !(errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)) {
-			return recv_result;
-		}
-		block_recv_length += recv_result;
-		//task->fin_size += block_recv_length;
-	}//end while
-	pthread_rwlock_unlock(&file_trans_control_rwlock);
-/*	for (int i = 0; i < BLOCK_SIZE; i += 1) {*/
-/*		printf("%02x ",file_block[i]);*/
-/*	}//end for*/
-/*	printf("\n");*/
-	return recv_result;
-}
-
-
-
-
-/*char *init_md5(char *file_location)*/
-/*{*/
-/*	int command_length = (strlen(MD5_COMMAND_HEAD) + strlen(file_location) + strlen(MD5_COMMAND_TAIL)) * sizeof(char);*/
-/*	char *command = malloc_string_safe(command, command_length);*/
-/*	char *md5 = malloc_string_safe(md5, MD5_LENGTH);*/
-/*	FILE *command_pipe_file = popen(command, "r");*/
-/*	fgets(md5, MD5_LENGTH, command_pipe_file);*/
-/*	pclose(command_pipe_file);*/
-/*	return md5;*/
-/*}*/
-
-/*void destroy_md5(char *md5)*/
-/*{*/
-/*	free_safe(md5);*/
-/*}*/

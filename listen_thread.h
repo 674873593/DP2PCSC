@@ -9,7 +9,6 @@
 	
 	extern socket_fd listen_socket_fd;
 	extern int client_shutdown;
-	//pthread_t *listen_thread_id;
 	void *listen_thread(void *arg);
 	
 #endif /* __listen_thread_H__ */ 
