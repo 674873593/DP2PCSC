@@ -256,23 +256,25 @@ struct connect_info *init_download(socket_fd talk_socket_fd, char *friend_name, 
 	struct connect_info *cinfo = (struct connect_info*)malloc_safe(cinfo, sizeof(struct connect_info));
 	struct file_trans *task;
 	
-	if (file_trans_fd == ERROR) {//Accepter recv file_name md5
+	if (file_trans_fd == ERROR) {//Accepter recv file_name init
 		if (recv_unwrap_split_data(talk_socket_fd, data_recv, NULL) == FALSE) return NULL;
 		char *file_name = init_data_recombine(data_recv);
 		recombine_data(data_recv, file_name);
 		printf("[file_name data] send ACK\n");
 		send(talk_socket_fd, ACK_STR, strlen(ACK_STR), 0);
 		
-		if (recv_unwrap_split_data(talk_socket_fd, data_recv, NULL) == FALSE) return NULL;
-		char *md5 = init_data_recombine(data_recv);
-		recombine_data(data_recv, md5);
-		printf("[md5 data] send ACK\n");
-		send(talk_socket_fd, ACK_STR, strlen(ACK_STR), 0);
-		task = find_file_trans_task(file_trans_control, init_file_trans(file_trans_control, FALSE, file_name, NULL, md5));
+/*		if (recv_unwrap_split_data(talk_socket_fd, data_recv, NULL) == FALSE) return NULL;*/
+/*		char *md5 = init_data_recombine(data_recv);*/
+/*		recombine_data(data_recv, md5);*/
+/*		printf("[md5 data] send ACK\n");*/
+/*		send(talk_socket_fd, ACK_STR, strlen(ACK_STR), 0);*/
+/*		task = find_file_trans_task(file_trans_control, init_file_trans(file_trans_control, FALSE, file_name, NULL, md5));*/
+		file_trans_fd = init_file_trans(file_trans_control, FALSE, file_name, NULL);
+		task = find_file_trans_task(file_trans_control, file_trans_fd);
 		destroy_data_recombine(file_name);
-		destroy_data_recombine(md5);
+/*		destroy_data_recombine(md5);*/
 		
-	}else{//Launcher send file_name md5
+	}else{//Launcher send file_name
 		task = find_file_trans_task(file_trans_control, file_trans_fd);
 
 		send_wrap_split_data(talk_socket_fd, task->file_name, ETB);
@@ -281,11 +283,11 @@ struct connect_info *init_download(socket_fd talk_socket_fd, char *friend_name, 
 		if (recv_equal_char(talk_socket_fd, ACK) == FALSE) return NULL;
 		printf("[recv ACK]\n");
 		
-		send_wrap_split_data(talk_socket_fd, task->md5, ETB);
-		printf("[send md5 data] %s\n",task->md5);
-		//recv head control ACK
-		if (recv_equal_char(talk_socket_fd, ACK) == FALSE) return NULL;
-		printf("[recv ACK]\n");
+/*		send_wrap_split_data(talk_socket_fd, task->md5, ETB);*/
+/*		printf("[send md5 data] %s\n",task->md5);*/
+/*		//recv head control ACK*/
+/*		if (recv_equal_char(talk_socket_fd, ACK) == FALSE) return NULL;*/
+/*		printf("[recv ACK]\n");*/
 	}
 
 	printf("[init download]sockfd=%d friend_name=%s file_tranfd=%d\n",talk_socket_fd,friend_name,file_trans_fd);
@@ -304,21 +306,24 @@ void download_file(struct connect_info *cinfo)
 	struct file_trans *task = find_file_trans_task(file_trans_control, cinfo->file_trans_fd);
 	printf("[download_file\tfile_trans_fd]%d\n",cinfo->file_trans_fd);
 	unsigned char *block_buff = (unsigned char *)malloc_string_safe(block_buff, BLOCK_SIZE);
+	int result;
 	if(task->connect_launcher == TRUE){//Launcher read send
-		while(1){
+		while (task->fin_size < task->total_size && !client_shutdown){
 			read_file_trans_block(file_trans_control, cinfo->file_trans_fd, block_buff);
-			if (send_file_trans_block(file_trans_control, cinfo->file_trans_fd, cinfo->connect_socket_fd, block_buff) == FALSE) goto end;
+			result = send_file_trans_block(file_trans_control, cinfo->file_trans_fd, cinfo->connect_socket_fd, block_buff);
+			if (result <= 0 && !(errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)) break;
 			memset(block_buff, 0, BLOCK_SIZE);
 		}
+			
 	}else{//Accepter recv append
-		while(1){
+		while (task->fin_size < task->total_size && !client_shutdown){
 			memset(block_buff, 0, BLOCK_SIZE);
-			if(recv_file_trans_block(file_trans_control, cinfo->file_trans_fd, cinfo->connect_socket_fd, block_buff) == FALSE) goto end;
+			result = recv_file_trans_block(file_trans_control, cinfo->file_trans_fd, cinfo->connect_socket_fd, block_buff);
+			if (result <= 0 && !(errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)) break;
 			append_file_trans_block(file_trans_control, cinfo->file_trans_fd, block_buff, BLOCK_SIZE);
 		}
 		
 	}
-	end:
 	free_safe(block_buff);
 	
 }
