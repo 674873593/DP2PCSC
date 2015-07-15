@@ -136,7 +136,7 @@ struct connect_info *init_download(socket_fd talk_socket_fd, char *friend_name, 
 		task = find_file_trans_task(file_trans_control, file_trans_fd);
 		char *size_info = (char *)malloc_string_safe(size_info, strlen(SIZE_INFO_HEAD) + strlen(total_size_str) + strlen(SIZE_INFO_TAIL));
 		sprintf(size_info, "%s%s%s", SIZE_INFO_HEAD, total_size_str, SIZE_INFO_TAIL);
-		show(task->file_name, SIZE_INFO_HEAD, SHOW_DIRECTION_SYSTEM_INFO);
+		show(task->file_name, size_info, SHOW_DIRECTION_SYSTEM_INFO);
 		destroy_data_recombine(file_name);
 		destroy_data_recombine(total_size_str);
 		free(size_info);
@@ -154,7 +154,7 @@ struct connect_info *init_download(socket_fd talk_socket_fd, char *friend_name, 
 		
 		char *size_info = (char *)malloc_string_safe(size_info, strlen(SIZE_INFO_HEAD) + strlen(send_total_size_str) + strlen(SIZE_INFO_TAIL));
 		sprintf(size_info, "%s%s%s", SIZE_INFO_HEAD, send_total_size_str, SIZE_INFO_TAIL);
-		show(task->file_name, SIZE_INFO_HEAD, SHOW_DIRECTION_SYSTEM_INFO);
+		show(task->file_name, size_info, SHOW_DIRECTION_SYSTEM_INFO);
 		free(size_info);
 		
 		send_wrap_split_data(talk_socket_fd, send_total_size_str, ETB);

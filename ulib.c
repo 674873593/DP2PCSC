@@ -40,7 +40,7 @@ char *long_to_string(long number)
 	
 	char *str = (char *)malloc_string_safe(str, size);
 	char ch;
-	for (int i = size - 1; i != -1; i -= 1) {
+	for (int i = size - 2; i != -1; i -= 1) {
 		ch = number % 10;
 		number /= 10;
 		str[i] = ch + 48;
