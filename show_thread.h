@@ -18,6 +18,7 @@
 	#define SHOW_TTY_NAME_BUFSIZE 50
 	#define SHOW_DIRECTION_IN 0
 	#define SHOW_DIRECTION_OUT 1
+	#define SHOW_DIRECTION_SYSTEM_INFO 3
 	extern int client_shutdown;
 	
 	struct show_tty{
