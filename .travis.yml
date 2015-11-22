@@ -1,6 +1,6 @@
 install: make
 language: c
 compiler:
-  - gcc
+  - gcc -v => gcc version 4.8.1
 script:
-  make && make test
+  make && make test && echo "make successful"
