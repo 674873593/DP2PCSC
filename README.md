@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ukari/DP2PCSC.svg)](https://travis-ci.org/ukari/DP2PCSC)
+
 # DP2PCSC
 
 Distributed Peer-to-Peer Communication Software Client
