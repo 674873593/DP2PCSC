@@ -37,6 +37,10 @@ ulib.o:ulib.h
 
 file_trans.o:file_trans.h
 
-.PHONY:clean 
+.PHONY:clean
 clean:
-	rm $(OBJECTS) 
+	rm $(OBJECTS)
+
+.PHONY:test
+test:
+	$(./dp2pcsc&) && echo "run success""
