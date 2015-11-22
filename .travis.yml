@@ -1,6 +1,8 @@
 language: c
 
-install: make
+install:
+  - sudo apt-get install -qq gcc-4.8
+  - make
 
 compiler:
   - gcc-4.8
