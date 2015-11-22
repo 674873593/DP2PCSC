@@ -2,7 +2,6 @@ language: c
 
 install:
   - make
-  - gnome-terminal
 
 compiler:
   - gcc
