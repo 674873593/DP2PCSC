@@ -2,9 +2,9 @@ PRONAME		=dp2pcsc
 
 
 
-CC			=gcc-4.8
+CC			=gcc
 OBJECTS		=$(PRONAME).o Queue.o friend.o listen_thread.o talk_thread.o show_thread.o ulib.o file_trans.o
-CFLAGS		=-std=gnu11 -g -lpthread  -Wall
+CFLAGS		=-std=gnu99 -g -lpthread  -Wall
 
 ### todo
 terminal-run:$(PRONAME)

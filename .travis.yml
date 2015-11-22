@@ -1,16 +1,10 @@
 language: c
 
-sudo: required
-
-before-install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq gcc-4.8
-
 install:
   - make
 
 compiler:
-  - gcc-4.8
+  - gcc
 
 script:
   make && make test && echo "make successful"
